@@ -9,4 +9,5 @@ type User = {
   uid: string;
   username: string;
   level: number = 1;
+  joined: string;
 };

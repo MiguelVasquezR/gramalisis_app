@@ -1,35 +1,54 @@
-export const LEVELS = [
+export const LEVEL_GROUPS = [
   {
-    id: 1,
-    title: 'Explorador',
-    description: 'Registra tu primer análisis y descubre los insights básicos.',
-    requirement: 1,
-  },
-  {
-    id: 2,
-    title: 'Analista',
-    description: 'Mantén una racha de 5 análisis para desbloquear métricas avanzadas.',
-    requirement: 5,
-  },
-  {
-    id: 3,
-    title: 'Estratega',
-    description: 'Comparte 10 textos distintos para activar recomendaciones.',
-    requirement: 10,
-  },
-  {
-    id: 4,
-    title: 'Mentor',
-    description: 'Colabora con tu equipo compartiendo 15 análisis.',
-    requirement: 15,
-  },
-  {
-    id: 5,
-    title: 'Leyenda',
-    description: 'Completa 25 análisis para desbloquear todos los reportes.',
-    requirement: 25,
+    id: 'basic',
+    title: 'Nivel básico',
+    description: 'Construye vocabulario esencial y domina frases cotidianas.',
+    sublevels: [
+      {
+        id: 'basic-1',
+        order: 1,
+        title: 'Saludos esenciales',
+        description: 'Aprende a presentarte y saludar en diferentes contextos.',
+        requirement: 1,
+        icon: '👋',
+      },
+      {
+        id: 'basic-2',
+        order: 2,
+        title: 'Café y comida',
+        description: 'Pide tus platillos favoritos sin miedo.',
+        requirement: 3,
+        icon: '☕️',
+      },
+      {
+        id: 'basic-3',
+        order: 3,
+        title: 'Rutas y transporte',
+        description: 'Pregunta direcciones y entiende indicaciones simples.',
+        requirement: 6,
+        icon: '🗺️',
+      },
+      {
+        id: 'basic-4',
+        order: 4,
+        title: 'Plan de viaje',
+        description: 'Organiza una salida y coordina horarios.',
+        requirement: 10,
+        icon: '🎒',
+      },
+      {
+        id: 'basic-5',
+        order: 5,
+        title: 'Historias breves',
+        description: 'Cuenta experiencias en pasado de forma natural.',
+        requirement: 15,
+        icon: '📖',
+      },
+    ],
   },
 ] as const;
 
-export type Level = (typeof LEVELS)[number];
+export const LEVELS = LEVEL_GROUPS.flatMap((group) => group.sublevels);
 
+export type Level = (typeof LEVELS)[number];
+export type LevelGroup = (typeof LEVEL_GROUPS)[number];

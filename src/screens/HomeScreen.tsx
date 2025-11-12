@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import {
-  FlatList,
   Image,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,7 +14,7 @@ import { signOut as signOutFromApp } from "../lib/auth";
 import { Entry, createEntry, subscribeToEntries } from "../lib/entries";
 import { useAuth } from "../context/AuthContext";
 import { PrimaryButton } from "../components/PrimaryButton";
-import { LEVELS } from "../const/levels";
+import { LEVELS, LEVEL_GROUPS } from "../const/levels";
 import { useAppDispatch, useAppSelector } from "../store/AppStore";
 
 const formatDate = (date?: Date) => {
@@ -28,19 +28,25 @@ const formatDate = (date?: Date) => {
 export const HomeScreen = () => {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
-  const userState: User | null = useAppSelector((state) => state.currentUser);
   const entries = useAppSelector((state) => state.entries);
+  const currentUser = useAppSelector((state) => state.currentUser);
+
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [currentUser, setCurrentUser] = useState<User>();
-
   useEffect(() => {
-    if (userState) {
-      setCurrentUser(userState);
+    if (!user) {
+      dispatch({ type: "SET_ENTRIES", payload: [] });
+      return;
     }
-  }, [userState]);
+
+    const unsubscribe = subscribeToEntries(user.uid, (nextEntries) => {
+      dispatch({ type: "SET_ENTRIES", payload: nextEntries });
+    });
+
+    return unsubscribe;
+  }, [user, dispatch]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -75,225 +81,131 @@ export const HomeScreen = () => {
   const userLevel = Math.max(
     currentUser?.level || 1,
     Math.min(
-      LEVELS[LEVELS.length - 1].id,
+      LEVELS[LEVELS.length - 1].order,
       LEVELS.reduce(
-        (acc, level) => (totalEntries >= level.requirement ? level.id : acc),
+        (acc, level) => (totalEntries >= level.requirement ? level.order : acc),
         1
       )
     )
   );
-  const nextLevel =
-    LEVELS.find((lvl) => lvl.id === userLevel + 1) ?? LEVELS[LEVELS.length - 1];
-  const remainingForNext = Math.max(0, nextLevel.requirement - totalEntries);
 
-  const listContentStyle = totalEntries === 0 ? styles.emptyContent : undefined;
+  const nextLevel =
+    LEVELS.find((lvl) => lvl.order === userLevel + 1) ?? LEVELS[LEVELS.length - 1];
+  const remainingForNext = Math.max(0, nextLevel.requirement - totalEntries);
+  const avatarLetter =
+    currentUser?.firstName?.charAt(0).toUpperCase() ??
+    currentUser?.username?.charAt(0).toUpperCase() ??
+    user?.email?.charAt(0).toUpperCase() ??
+    "U";
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.topMenu}>
-          <View style={styles.levelContainer}>
-            <Text style={styles.levelLabel}>
-              {currentUser?.firstName} {currentUser?.lastName}
-            </Text>
-            <View style={styles.starsRow}>
-              {Array.from({ length: 5 }).map((_, idx) => (
-                <Text
-                  key={idx}
-                  style={[
-                    styles.star,
-                    idx < userLevel ? styles.starActive : styles.starInactive,
-                  ]}
-                >
-                  ★
-                </Text>
-              ))}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.container}>
+          <View style={styles.topMenu}>
+            <View style={styles.levelContainer}>
+              <Text style={styles.levelLabel}>
+                {currentUser
+                  ? `${currentUser.firstName} ${currentUser.lastName}`
+                  : "Gramálisis"}
+              </Text>
+              <View style={styles.starsRow}>
+                {Array.from({ length: 5 }).map((_, idx) => (
+                  <Text
+                    key={idx}
+                    style={[
+                      styles.star,
+                      idx < userLevel ? styles.starActive : styles.starInactive,
+                    ]}
+                  >
+                    ★
+                  </Text>
+                ))}
+              </View>
+              <Text style={styles.levelHelper}>
+                {remainingForNext > 0
+                  ? `Te faltan ${remainingForNext} lecciones para subir al siguiente nivel.`
+                  : "¡Has desbloqueado todo el nivel básico!"}
+              </Text>
             </View>
-          </View>
-          <Link href="/profile" asChild>
-            <TouchableOpacity style={styles.avatarButton}>
-              {currentUser?.photoUrl ? (
-                <Image source={{ uri: currentUser.photoUrl }} style={styles.avatarImage} />
-              ) : (
-                <Text style={styles.avatarInitial}>
-                  {currentUser?.firstName?.charAt(0)?.toUpperCase() ??
-                    user?.email?.charAt(0).toUpperCase() ??
-                    "U"}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </Link>
-        </View>
-
-        <View style={styles.levelsSection}>
-          <Text style={styles.sectionTitle}>Niveles disponibles</Text>
-          <Text style={styles.sectionSubtitle}>
-            {remainingForNext > 0
-              ? `Completa ${remainingForNext} análisis más para subir al siguiente nivel.`
-              : "Has desbloqueado todos los niveles disponibles 🎉"}
-          </Text>
-
-          <View style={styles.levelsGrid}>
-            {LEVELS.map((level) => {
-              const unlocked = totalEntries >= level.requirement;
-              const isCurrent = userLevel === level.id;
-              return (
-                <View
-                  key={level.id}
-                  style={[
-                    styles.levelCard,
-                    unlocked && styles.levelCardUnlocked,
-                    isCurrent && styles.levelCardCurrent,
-                  ]}
-                >
-                  <View style={styles.levelHeader}>
-                    <Text style={styles.levelBadge}>Nivel {level.id}</Text>
-                    <Text
-                      style={[
-                        styles.levelStatus,
-                        unlocked
-                          ? styles.levelStatusUnlocked
-                          : styles.levelStatusLocked,
-                      ]}
-                    >
-                      {unlocked
-                        ? isCurrent
-                          ? "Actual"
-                          : "Desbloqueado"
-                        : "Bloqueado"}
-                    </Text>
-                  </View>
-                  <Text style={styles.levelTitle}>{level.title}</Text>
-                  <Text style={styles.levelDescription}>
-                    {level.description}
-                  </Text>
-                  <Text style={styles.levelRequirement}>
-                    {Math.min(totalEntries, level.requirement)}/
-                    {level.requirement} análisis
-                  </Text>
-                  <PrimaryButton
-                    label={unlocked ? "Explorar reto" : "Completa más"}
-                    onPress={() => {}}
-                    disabled={!unlocked}
-                    variant={unlocked ? "primary" : "secondary"}
+            <Link href="/profile" asChild>
+              <TouchableOpacity style={styles.avatarButton}>
+                {currentUser?.photoUrl ? (
+                  <Image
+                    source={{ uri: currentUser.photoUrl }}
+                    style={styles.avatarImage}
                   />
-                </View>
-              );
-            })}
+                ) : (
+                  <Text style={styles.avatarInitial}>{avatarLetter}</Text>
+                )}
+              </TouchableOpacity>
+            </Link>
           </View>
-        </View>
 
-        <View style={styles.levelsSection}>
-          <Text style={styles.sectionTitle}>Niveles disponibles</Text>
-          <Text style={styles.sectionSubtitle}>
-            {remainingForNext > 0
-              ? `Completa ${remainingForNext} análisis más para subir al siguiente nivel.`
-              : "Has desbloqueado todos los niveles disponibles 🎉"}
-          </Text>
+          <View style={styles.levelsSection}>
+            {LEVEL_GROUPS.map((group) => (
+              <View key={group.id} style={styles.levelGroup}>
+                <Text style={styles.sectionTitle}>{group.title}</Text>
+                <Text style={styles.sectionSubtitle}>{group.description}</Text>
 
-          <View style={styles.levelsGrid}>
-            {LEVELS.map((level) => {
-              const unlocked = totalEntries >= level.requirement;
-              const isCurrent = userLevel === level.id;
-
-              return (
-                <View
-                  key={level.id}
-                  style={[
-                    styles.levelCard,
-                    unlocked && styles.levelCardUnlocked,
-                    isCurrent && styles.levelCardCurrent,
-                  ]}
-                >
-                  <View style={styles.levelHeader}>
-                    <Text style={styles.levelBadge}>Nivel {level.id}</Text>
-                    <Text
-                      style={[
-                        styles.levelStatus,
-                        unlocked
-                          ? styles.levelStatusUnlocked
-                          : styles.levelStatusLocked,
-                      ]}
-                    >
-                      {unlocked
-                        ? isCurrent
-                          ? "Actual"
-                          : "Desbloqueado"
-                        : "Bloqueado"}
-                    </Text>
-                  </View>
-                  <Text style={styles.levelTitle}>{level.title}</Text>
-                  <Text style={styles.levelDescription}>
-                    {level.description}
-                  </Text>
-                  <Text style={styles.levelRequirement}>
-                    {Math.min(totalEntries, level.requirement)}/
-                    {level.requirement} análisis
-                  </Text>
-                  <PrimaryButton
-                    label={unlocked ? "Explorar reto" : "Completa más"}
-                    onPress={() => {}}
-                    disabled={!unlocked}
-                    variant={unlocked ? "primary" : "secondary"}
-                  />
-                </View>
-              );
-            })}
-          </View>
-        </View>
-
-        <View style={styles.editorCard}>
-          <Text style={styles.cardTitle}>Nuevo análisis</Text>
-          <TextInput
-            style={styles.input}
-            multiline
-            value={text}
-            onChangeText={setText}
-            placeholder="Escribe o pega un texto para analizar..."
-            placeholderTextColor="#94a3b8"
-          />
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          <View style={styles.buttonWrapper}>
-            <PrimaryButton
-              label="Guardar análisis"
-              onPress={handleSave}
-              loading={saving}
-              disabled={!text.trim()}
-            />
-          </View>
-        </View>
-
-        <View style={styles.listContainer}>
-          <View style={styles.listHeader}>
-            <Text style={styles.listTitle}>Historial</Text>
-            <Text style={styles.listCount}>{entries.length} guardados</Text>
-          </View>
-          <FlatList
-            data={entries}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={listContentStyle}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            renderItem={({ item }) => (
-              <View style={styles.entryCard}>
-                <Text style={styles.entryText}>{item.text}</Text>
-                <View style={styles.entryMetaRow}>
-                  <Text style={styles.entrySummary}>{item.summary}</Text>
-                  <Text style={styles.entryDate}>
-                    {formatDate(item.createdAt)}
-                  </Text>
+                <View style={styles.levelsGrid}>
+                  {group.sublevels.map((level) => {
+                    const unlocked = totalEntries >= level.requirement;
+                    const isCurrent = userLevel === level.order;
+                    return (
+                      <View
+                        key={level.id}
+                        style={[
+                          styles.levelCard,
+                          unlocked && styles.levelCardUnlocked,
+                          isCurrent && styles.levelCardCurrent,
+                        ]}
+                      >
+                        <View style={styles.levelHeader}>
+                          <Text style={styles.levelIcon}>{level.icon}</Text>
+                          <Text
+                            style={[
+                              styles.levelStatus,
+                              unlocked
+                                ? styles.levelStatusUnlocked
+                                : styles.levelStatusLocked,
+                            ]}
+                          >
+                            {unlocked
+                              ? isCurrent
+                                ? "Nivel en curso"
+                                : "Desbloqueado"
+                              : "Bloqueado"}
+                          </Text>
+                        </View>
+                        <Text style={styles.levelTitle}>
+                          {level.order}. {level.title}
+                        </Text>
+                        <Text style={styles.levelDescription}>
+                          {level.description}
+                        </Text>
+                        <Text style={styles.levelRequirement}>
+                          {Math.min(totalEntries, level.requirement)}/
+                          {level.requirement} lecciones
+                        </Text>
+                        <PrimaryButton
+                          label={unlocked ? "Revisar" : "Completa más"}
+                          onPress={() => {}}
+                          disabled={!unlocked}
+                          variant={unlocked ? "primary" : "secondary"}
+                        />
+                      </View>
+                    );
+                  })}
                 </View>
               </View>
-            )}
-            ListEmptyComponent={
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>
-                  Aún no tienes análisis guardados.
-                </Text>
-              </View>
-            }
-          />
+            ))}
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -305,48 +217,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff",
   },
+  scrollContent: {
+    paddingBottom: 48,
+  },
   container: {
-    flex: 1,
     paddingHorizontal: 20,
-    paddingVertical: 24,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  brandLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    color: "#7a96ff",
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#1d2b74",
-    marginTop: 4,
-  },
-  actionsRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    paddingTop: 24,
   },
   topMenu: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 24,
   },
   levelContainer: {
     flex: 1,
+    marginRight: 16,
   },
   levelLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#475569",
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1d2b74",
+    marginBottom: 8,
   },
   starsRow: {
     flexDirection: "row",
@@ -354,18 +246,22 @@ const styles = StyleSheet.create({
   },
   star: {
     fontSize: 18,
-    marginRight: 4,
   },
   starActive: {
     color: "#fbbf24",
   },
   starInactive: {
-    color: "#cbd5f5",
+    color: "#dbe4ff",
+  },
+  levelHelper: {
+    marginTop: 8,
+    fontSize: 13,
+    color: "#64748b",
   },
   avatarButton: {
-    height: 48,
-    width: 48,
-    borderRadius: 24,
+    height: 52,
+    width: 52,
+    borderRadius: 26,
     backgroundColor: "#1d2b74",
     alignItems: "center",
     justifyContent: "center",
@@ -377,45 +273,45 @@ const styles = StyleSheet.create({
     color: "#ffffff",
   },
   avatarImage: {
-    height: 48,
-    width: 48,
-    borderRadius: 24,
+    height: "100%",
+    width: "100%",
   },
   levelsSection: {
-    marginBottom: 24,
+    gap: 24,
+  },
+  levelGroup: {
+    gap: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
     color: "#1d2b74",
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: "#64748b",
-    marginTop: 4,
-    marginBottom: 16,
+    color: "#475569",
   },
   levelsGrid: {
     gap: 16,
   },
   levelCard: {
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: "#e5edff",
-    backgroundColor: "#f8f9ff",
+    backgroundColor: "#f8faff",
     padding: 16,
     gap: 8,
   },
   levelCardUnlocked: {
     backgroundColor: "#ffffff",
-    borderColor: "#cbd5f5",
+    borderColor: "#c3d3ff",
   },
   levelCardCurrent: {
     borderColor: "#364fe6",
     shadowColor: "rgba(54,79,230,0.15)",
     shadowOpacity: 1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
   levelHeader: {
@@ -423,10 +319,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  levelBadge: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#364fe6",
+  levelIcon: {
+    fontSize: 24,
   },
   levelStatus: {
     fontSize: 12,
@@ -451,45 +345,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#94a3b8",
   },
-  actionButton: {
-    borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginLeft: 10,
-  },
-  actionButtonFirst: {
-    marginLeft: 0,
-  },
-  outlineButton: {
-    borderWidth: 1,
-    borderColor: "#e5edff",
-    backgroundColor: "#ffffff",
-  },
-  solidButton: {
-    backgroundColor: "#364fe6",
-  },
-  actionText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  outlineText: {
-    color: "#2a3dba",
-  },
-  solidText: {
-    color: "#ffffff",
-  },
   editorCard: {
     borderRadius: 24,
     borderWidth: 1,
     borderColor: "#e5edff",
     backgroundColor: "#f3f7ff",
     padding: 16,
-    shadowColor: "rgba(0,0,0,0.05)",
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-    marginBottom: 24,
+    marginTop: 32,
   },
   cardTitle: {
     fontSize: 18,
@@ -516,14 +378,14 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     marginTop: 16,
   },
-  listContainer: {
-    flex: 1,
+  historySection: {
+    marginTop: 32,
+    gap: 12,
   },
   listHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
   },
   listTitle: {
     fontSize: 18,
@@ -534,25 +396,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#7a96ff",
   },
-  separator: {
-    height: 12,
-  },
   entryCard: {
     borderRadius: 24,
     borderWidth: 1,
     borderColor: "#e5edff",
     backgroundColor: "#ffffff",
     padding: 16,
-    shadowColor: "rgba(0,0,0,0.03)",
-    shadowOpacity: 1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
+    gap: 8,
   },
   entryText: {
     fontSize: 16,
     color: "#0f172a",
-    marginBottom: 8,
   },
   entryMetaRow: {
     flexDirection: "row",
@@ -568,17 +422,43 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#94a3b8",
   },
-  emptyContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-  },
   emptyState: {
     alignItems: "center",
-    paddingVertical: 32,
+    paddingVertical: 24,
   },
   emptyText: {
-    textAlign: "center",
-    fontSize: 16,
+    fontSize: 15,
     color: "#94a3b8",
+    textAlign: "center",
+  },
+  actionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 32,
+  },
+  actionButton: {
+    flex: 1,
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  solidButton: {
+    backgroundColor: "#364fe6",
+  },
+  outlineButton: {
+    borderWidth: 1,
+    borderColor: "#e5edff",
+    backgroundColor: "#ffffff",
+  },
+  actionText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  solidText: {
+    color: "#ffffff",
+  },
+  outlineText: {
+    color: "#1d2b74",
   },
 });

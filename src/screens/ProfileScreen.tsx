@@ -16,9 +16,6 @@ import { PrimaryButton } from "../components/PrimaryButton";
 import { useAppSelector } from "../store/AppStore";
 import { buildFullName } from "../utils/utils";
 
-const avatarUri =
-  "https://images.ctfassets.net/3s5io6mnxfqz/2X8tOCmFLK9X4nHIaWkKQ4/7654afad8eb5b3a0b2733bc8f42b77d8/mobbin-profile.png";
-
 const CardRow = ({ icon, label }: { icon: string; label: string }) => (
   <View style={styles.cardRow}>
     <Text style={styles.cardRowIcon}>{icon}</Text>
@@ -36,10 +33,17 @@ export const ProfileScreen = () => {
     currentUser?.firstName || "",
     currentUser?.lastName || ""
   );
-  const email = currentUser?.username ?? "example@gmail.com";
+  const email = currentUser?.username ?? user?.email ?? "example@gmail.com";
   const joined = "Joined August 17, 2023";
-  const photo = currentUser?.photoUrl ?? avatarUri;
+  const photo = currentUser?.photoUrl ?? user?.photoURL ?? null;
   const job = currentUser?.job ?? "Ocupación";
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const handleLogout = () =>
     Alert.alert("Cerrar sesión", "¿Seguro que deseas salir de tu cuenta?", [
@@ -201,10 +205,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 24,
   },
+  avatarWrapper: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: "#f4f0ff",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
   avatar: {
     width: 160,
     height: 160,
     borderRadius: 80,
+  },
+  avatarPlaceholder: {
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarInitial: {
+    fontSize: 48,
+    fontWeight: "700",
+    color: "#7a5af8",
   },
   name: {
     marginTop: 24,
