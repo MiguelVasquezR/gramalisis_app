@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import Toast from 'react-native-toast-message';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { AppStoreProvider } from '../src/store/AppStore';
 
@@ -48,6 +49,7 @@ export default function RootLayout() {
     <AppStoreProvider>
       <AuthProvider>
         <RouterGate />
+        <Toast position="top" topOffset={48} />
       </AuthProvider>
     </AppStoreProvider>
   );
