@@ -44,6 +44,11 @@ export const AuthScreen = () => {
     try {
       const response = await login(trimmedEmail, trimmedPassword);
 
+      if (response.requiresVerification) {
+        showError(response.message);
+        return;
+      }
+
       if (!response.ok) {
         showError(response.message);
         return;

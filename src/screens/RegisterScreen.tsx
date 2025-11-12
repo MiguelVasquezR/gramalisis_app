@@ -25,6 +25,7 @@ import { register } from "../firebase/authService";
 import { writeData } from "../firebase/dbService";
 import HeaderBar from "../components/HeaderBar";
 import COLORS from "../theme/colors";
+import { useToastMessage } from "../hooks/useToastMessage";
 
 type InputBlockProps = {
   label: string;
@@ -105,9 +106,8 @@ export const RegisterScreen = () => {
   const [password, setPassword] = useState("");
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [iosPickerDate, setIosPickerDate] = useState(new Date(2000, 0, 1));
-  const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { showError, showSuccess } = useToastMessage();
 
   const handleBirthDateChange = (
     event: DateTimePickerEvent,
@@ -173,32 +173,27 @@ export const RegisterScreen = () => {
       !trimmedEmail ||
       !trimmedPassword
     ) {
-      setError("Por favor completa todos los campos.");
-      setStatus(null);
+      showError("Por favor completa todos los campos.");
       return;
     }
 
     if (!isValidEmail(trimmedEmail)) {
-      setError("Ingresa un correo electrónico válido.");
-      setStatus(null);
+      showError("Ingresa un correo electrónico válido.");
       return;
     }
 
     if (trimmedPassword.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      setStatus(null);
+      showError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
-    setError(null);
-    setStatus(null);
     setLoading(true);
 
     try {
       const registerResponse = await register(trimmedEmail, trimmedPassword);
 
       if (registerResponse.status !== 200 || !registerResponse.uid) {
-        setError(registerResponse.message ?? "No pudimos crear tu cuenta.");
+        showError(registerResponse.message ?? "No pudimos crear tu cuenta.");
         return;
       }
 
@@ -218,18 +213,20 @@ export const RegisterScreen = () => {
       const result = await writeData("USERS", userProfile);
 
       if (result !== 200) {
-        setError("No pudimos guardar tu información. Intenta nuevamente.");
+        showError("No pudimos guardar tu información. Intenta nuevamente.");
         return;
       }
 
-      setStatus("Cuenta creada correctamente 🎉");
-      router.replace("/home");
+      showSuccess(
+        "Cuenta creada. Revisa tu correo y confirma para activar tu cuenta."
+      );
+      router.replace("/verify-email");
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
           : "Ocurrió un error al crear tu cuenta.";
-      setError(message);
+      showError(message);
     } finally {
       setLoading(false);
     }
@@ -310,9 +307,6 @@ export const RegisterScreen = () => {
             </View>
 
             <View style={styles.actions}>
-              {error && <Text style={styles.errorText}>{error}</Text>}
-              {status && <Text style={styles.statusText}>{status}</Text>}
-
               <Pressable
                 style={[
                   styles.submitButton,
@@ -459,16 +453,6 @@ const styles = StyleSheet.create({
   },
   actions: {
     marginTop: 32,
-  },
-  errorText: {
-    fontSize: 14,
-    color: COLORS.BLUE,
-    marginBottom: 8,
-  },
-  statusText: {
-    fontSize: 14,
-    color: COLORS.GREEN,
-    marginBottom: 8,
   },
   submitButton: {
     height: 56,

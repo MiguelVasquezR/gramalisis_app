@@ -9,6 +9,9 @@ export default function ProfileEditRoute() {
     return <Redirect href="/login" />;
   }
 
+  if (!user.emailVerified) {
+    return <Redirect href="/verify-email" />;
+  }
+
   return <ProfileEditScreen />;
 }
-

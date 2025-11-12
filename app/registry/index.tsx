@@ -6,9 +6,8 @@ export default function RegistryRoute() {
   const { user } = useAuth();
 
   if (user) {
-    return <Redirect href="/home" />;
+    return <Redirect href={user.emailVerified ? '/home' : '/verify-email'} />;
   }
 
   return <RegisterScreen />;
 }
-

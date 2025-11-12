@@ -9,5 +9,9 @@ export default function HomeRoute() {
     return <Redirect href="/login" />;
   }
 
+  if (!user.emailVerified) {
+    return <Redirect href="/verify-email" />;
+  }
+
   return <HomeScreen />;
 }

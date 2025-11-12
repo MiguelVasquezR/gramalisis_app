@@ -6,19 +6,41 @@ import {
   getIdToken,
   User,
   sendPasswordResetEmail,
+  sendEmailVerification,
 } from "firebase/auth";
+import * as Linking from "expo-linking";
 import { auth } from "./firebase";
 
 export function watchAuth(cb: (user: User | null) => void) {
   return onAuthStateChanged(auth, cb);
 }
 
+type LoginResponse = {
+  ok: boolean;
+  user?: User;
+  message: string;
+  error?: string;
+  requiresVerification?: boolean;
+};
+
 export const login = async (
   email: string,
   password: string
-): Promise<{ ok: boolean; user?: any; message: string; error?: string }> => {
+): Promise<LoginResponse> => {
   try {
     const cred = await signInWithEmailAndPassword(auth, email, password);
+
+    await cred.user.reload();
+
+    if (!cred.user.emailVerified) {
+      return {
+        ok: false,
+        requiresVerification: true,
+        message:
+          "Tu correo aún no ha sido verificado. Por favor revisa tu bandeja e intenta nuevamente.",
+      };
+    }
+
     return {
       ok: true,
       user: cred.user,
@@ -39,13 +61,19 @@ export const login = async (
   }
 };
 
+const actionCodeSettings = {
+  handleCodeInApp: true,
+  url: "http://localhost.com",
+};
+
 export const register = async (email: string, password: string) => {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, password);
+    await sendEmailVerification(res.user, actionCodeSettings);
 
     return {
       status: 200,
-      message: "Usuario creado con éxito",
+      message: "Usuario creado con éxito. Revisa tu correo para activarlo.",
       uid: res.user.uid,
       user: res.user,
     };
@@ -83,6 +111,32 @@ export const resetPassword = async (email: string) => {
       message,
     };
   }
+};
+
+export const sendVerificationEmail = async () => {
+  try {
+    if (!auth.currentUser) {
+      throw new Error("No hay usuario autenticado.");
+    }
+
+    await sendEmailVerification(auth.currentUser, actionCodeSettings);
+    return {
+      ok: true,
+      message: "Te enviamos un nuevo correo de verificación.",
+    };
+  } catch (error: any) {
+    return {
+      ok: false,
+      error: error?.code,
+      message: error?.message ?? "No pudimos enviar el correo de verificación.",
+    };
+  }
+};
+
+export const reloadCurrentUser = async () => {
+  if (!auth.currentUser) return null;
+  await auth.currentUser.reload();
+  return auth.currentUser;
 };
 
 // Opcional: token para tu backend

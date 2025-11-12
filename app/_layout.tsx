@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { AppStoreProvider } from '../src/store/AppStore';
 
 const AUTH_SEGMENTS = new Set(['login', 'registry']);
+const VERIFY_SEGMENT = 'verify-email';
 
 const LoadingScreen = () => (
   <View style={styles.loader}>
@@ -24,10 +25,23 @@ const RouterGate = () => {
 
     const currentSegment = segments[0];
     const isAuthRoute = typeof currentSegment === 'string' && AUTH_SEGMENTS.has(currentSegment);
+    const isVerifyRoute = currentSegment === VERIFY_SEGMENT;
 
-    if (!user && !isAuthRoute) {
-      router.replace('/login');
-    } else if (user && isAuthRoute) {
+    if (!user) {
+      if (!isAuthRoute) {
+        router.replace('/login');
+      }
+      return;
+    }
+
+    if (!user.emailVerified) {
+      if (!isVerifyRoute) {
+        router.replace('/verify-email');
+      }
+      return;
+    }
+
+    if (user.emailVerified && (isAuthRoute || isVerifyRoute)) {
       router.replace('/home');
     }
   }, [user, loading, segments, router]);
