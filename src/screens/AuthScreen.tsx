@@ -17,6 +17,7 @@ import { login, resetPassword } from "../firebase/authService";
 import { URL_IMAGE_MAIN } from "../const/index";
 import HeaderBar from "../components/HeaderBar";
 import COLORS from "../theme/colors";
+import { useToastMessage } from "../hooks/useToastMessage";
 
 type AuthMode = "login" | "forgot";
 
@@ -24,10 +25,9 @@ export const AuthScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
+  const { showError, showSuccess } = useToastMessage();
 
   const isForgotMode = mode === "forgot";
 
@@ -36,29 +36,27 @@ export const AuthScreen = () => {
     const trimmedPassword = password.trim();
 
     if (!trimmedEmail || !trimmedPassword) {
-      setError("Por favor completa correo y contraseña.");
+      showError("Por favor completa correo y contraseña.");
       return;
     }
 
-    setError(null);
-    setStatus(null);
     setLoading(true);
     try {
       const response = await login(trimmedEmail, trimmedPassword);
 
       if (!response.ok) {
-        setError(response.message);
+        showError(response.message);
         return;
       }
 
-      setStatus(response.message);
+      showSuccess(response.message);
       router.replace("/home");
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
           : "Algo salió mal. Intenta nuevamente.";
-      setError(message);
+      showError(message);
     } finally {
       setLoading(false);
     }
@@ -68,29 +66,28 @@ export const AuthScreen = () => {
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail) {
-      setError("Por favor ingresa un correo válido.");
+      showError("Por favor ingresa un correo válido.");
       return;
     }
 
-    setError(null);
-    setStatus(null);
     setLoading(true);
 
     try {
       const response = await resetPassword(trimmedEmail);
 
       if (!response.ok) {
-        setError(response.message);
+        showError(response.message);
         return;
       }
 
-      setStatus(response.message);
+      showSuccess(response.message);
+      router.replace("/login");
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
           : "Algo salió mal. Intenta nuevamente.";
-      setError(message);
+      showError(message);
     } finally {
       setLoading(false);
     }
@@ -100,8 +97,6 @@ export const AuthScreen = () => {
     if (mode === nextMode) return;
 
     setMode(nextMode);
-    setError(null);
-    setStatus(null);
 
     if (nextMode === "forgot") {
       setPassword("");
@@ -179,9 +174,6 @@ export const AuthScreen = () => {
                   />
                 </View>
               )}
-
-              {error ? <Text style={styles.error}>{error}</Text> : null}
-              {status ? <Text style={styles.status}>{status}</Text> : null}
 
               <Pressable
                 style={[
@@ -289,15 +281,6 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     fontSize: 18,
     color: COLORS.BLACK,
-  },
-  error: {
-    fontSize: 14,
-    color: COLORS.BLUE,
-  },
-  status: {
-    fontSize: 14,
-    color: COLORS.GREEN,
-    marginTop: 8,
   },
   submitButton: {
     height: 56,

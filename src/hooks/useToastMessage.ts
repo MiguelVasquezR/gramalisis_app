@@ -1,4 +1,5 @@
 import Toast from "react-native-toast-message";
+import COLORS from "../theme/colors";
 
 type ToastType = "success" | "error" | "info";
 
@@ -32,6 +33,18 @@ export const useToastMessage = () => {
       position: "top",
       topOffset: 48,
       visibilityTime: options?.duration ?? 3500,
+      text1Style: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: COLORS.BLUE,
+      },
+      text2Style: {
+        fontSize: 14,
+        fontWeight: "500",
+        color: COLORS.BLACK,
+      },
+      text1NumberOfLines: 2,
+      text2NumberOfLines: 5,
     });
   };
 

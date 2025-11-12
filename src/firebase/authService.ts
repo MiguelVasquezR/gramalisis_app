@@ -68,7 +68,7 @@ export const resetPassword = async (email: string) => {
     await sendPasswordResetEmail(auth, email);
     return {
       ok: true,
-      message: "Hemos enviado un correo para restablecer tu contraseña ✅",
+      message: `Hemos enviado un correo a ${email}, revisalo para cambiar tu contraseña!`,
     };
   } catch (error: any) {
     let message = "No pudimos enviar el correo. Intenta nuevamente.";
