@@ -3,6 +3,5 @@ import { useAuth } from '../src/context/AuthContext';
 
 export default function IndexRoute() {
   const { user } = useAuth();
-  return <Redirect href={user ? '/home' : '/registry'} />;
+  return <Redirect href={user ? '/home' : '/login'} />;
 }
-

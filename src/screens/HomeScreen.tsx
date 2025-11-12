@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   FlatList,
   SafeAreaView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -57,45 +58,50 @@ export const HomeScreen = () => {
     await signOutFromApp();
   };
 
+  const listContentStyle = entries.length === 0 ? styles.emptyContent : undefined;
+
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 px-5 py-6 gap-6">
-        <View className="flex-row items-center justify-between gap-4">
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
           <View>
-            <Text className="text-xs font-semibold uppercase tracking-widest text-brand-500">
-              Gramálisis
-            </Text>
-            <Text className="text-2xl font-bold text-brand-900">
+            <Text style={styles.brandLabel}>Gramálisis</Text>
+            <Text style={styles.welcomeText}>
               Hola, {user?.email?.split('@')[0] ?? 'lingüista'}
             </Text>
           </View>
-          <View className="flex-row gap-2">
+          <View style={styles.actionsRow}>
+            <Link href="/profile" asChild>
+              <TouchableOpacity style={[styles.actionButton, styles.actionButtonFirst, styles.outlineButton]}>
+                <Text style={[styles.actionText, styles.outlineText]}>Perfil</Text>
+              </TouchableOpacity>
+            </Link>
             <Link href="/game" asChild>
-              <TouchableOpacity className="rounded-full bg-brand-600 px-4 py-2">
-                <Text className="text-sm font-semibold text-white">Modo juego</Text>
+              <TouchableOpacity style={[styles.actionButton, styles.solidButton]}>
+                <Text style={[styles.actionText, styles.solidText]}>Modo juego</Text>
               </TouchableOpacity>
             </Link>
             <TouchableOpacity
               onPress={handleLogout}
-              className="rounded-full border border-brand-100 px-4 py-2"
+              style={[styles.actionButton, styles.outlineButton]}
             >
-              <Text className="text-sm font-semibold text-brand-700">Cerrar sesión</Text>
+              <Text style={[styles.actionText, styles.outlineText]}>Cerrar sesión</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View className="rounded-3xl border border-brand-100 bg-brand-50 p-4 shadow-sm">
-          <Text className="text-lg font-semibold text-brand-900 mb-3">Nuevo análisis</Text>
+        <View style={styles.editorCard}>
+          <Text style={styles.cardTitle}>Nuevo análisis</Text>
           <TextInput
-            className="min-h-[120px] rounded-2xl border border-brand-100 bg-white px-4 py-3 text-base text-brand-900"
+            style={styles.input}
             multiline
             value={text}
             onChangeText={setText}
             placeholder="Escribe o pega un texto para analizar..."
             placeholderTextColor="#94a3b8"
           />
-          {error ? <Text className="text-sm text-red-500 mt-2">{error}</Text> : null}
-          <View className="mt-4">
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <View style={styles.buttonWrapper}>
             <PrimaryButton
               label="Guardar análisis"
               onPress={handleSave}
@@ -105,32 +111,28 @@ export const HomeScreen = () => {
           </View>
         </View>
 
-        <View className="flex-1">
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-lg font-semibold text-brand-900">Historial</Text>
-            <Text className="text-sm text-brand-500">{entries.length} guardados</Text>
+        <View style={styles.listContainer}>
+          <View style={styles.listHeader}>
+            <Text style={styles.listTitle}>Historial</Text>
+            <Text style={styles.listCount}>{entries.length} guardados</Text>
           </View>
           <FlatList
             data={entries}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={
-              entries.length === 0 ? { flexGrow: 1, justifyContent: 'center' } : undefined
-            }
-            ItemSeparatorComponent={() => <View className="h-3" />}
+            contentContainerStyle={listContentStyle}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
             renderItem={({ item }) => (
-              <View className="rounded-3xl border border-brand-100 bg-white p-4 shadow-sm">
-                <Text className="text-base text-brand-900 mb-2">{item.text}</Text>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-xs font-semibold text-brand-700">{item.summary}</Text>
-                  <Text className="text-xs text-brand-500">{formatDate(item.createdAt)}</Text>
+              <View style={styles.entryCard}>
+                <Text style={styles.entryText}>{item.text}</Text>
+                <View style={styles.entryMetaRow}>
+                  <Text style={styles.entrySummary}>{item.summary}</Text>
+                  <Text style={styles.entryDate}>{formatDate(item.createdAt)}</Text>
                 </View>
               </View>
             )}
             ListEmptyComponent={
-              <View className="items-center">
-                <Text className="text-center text-base text-brand-500">
-                  Aún no tienes análisis guardados.
-                </Text>
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>Aún no tienes análisis guardados.</Text>
               </View>
             }
           />
@@ -141,3 +143,168 @@ export const HomeScreen = () => {
 };
 
 export default HomeScreen;
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  brandLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: '#7a96ff',
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1d2b74',
+    marginTop: 4,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionButton: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginLeft: 10,
+  },
+  actionButtonFirst: {
+    marginLeft: 0,
+  },
+  outlineButton: {
+    borderWidth: 1,
+    borderColor: '#e5edff',
+    backgroundColor: '#ffffff',
+  },
+  solidButton: {
+    backgroundColor: '#364fe6',
+  },
+  actionText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  outlineText: {
+    color: '#2a3dba',
+  },
+  solidText: {
+    color: '#ffffff',
+  },
+  editorCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#e5edff',
+    backgroundColor: '#f3f7ff',
+    padding: 16,
+    shadowColor: 'rgba(0,0,0,0.05)',
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+    marginBottom: 24,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1d2b74',
+    marginBottom: 12,
+  },
+  input: {
+    minHeight: 120,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e5edff',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#0f172a',
+  },
+  error: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#ef4444',
+  },
+  buttonWrapper: {
+    marginTop: 16,
+  },
+  listContainer: {
+    flex: 1,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  listTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1d2b74',
+  },
+  listCount: {
+    fontSize: 14,
+    color: '#7a96ff',
+  },
+  separator: {
+    height: 12,
+  },
+  entryCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#e5edff',
+    backgroundColor: '#ffffff',
+    padding: 16,
+    shadowColor: 'rgba(0,0,0,0.03)',
+    shadowOpacity: 1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  entryText: {
+    fontSize: 16,
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  entryMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  entrySummary: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2a3dba',
+  },
+  entryDate: {
+    fontSize: 12,
+    color: '#94a3b8',
+  },
+  emptyContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#94a3b8',
+  },
+});

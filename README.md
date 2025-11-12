@@ -1,6 +1,6 @@
 # Gramalisis App
 
-Aplicación móvil construida con Expo + React Native, NativeWind (Tailwind) y Firebase. Permite registrar usuarios con autenticación por correo/contraseña y guardar textos analizados en Firestore.
+Aplicación móvil construida con Expo + React Native y Firebase. Permite registrar usuarios con autenticación por correo/contraseña y guardar textos analizados en Firestore.
 
 ## Requisitos
 
@@ -37,13 +37,15 @@ Las variables que empiezan con `EXPO_PUBLIC_` se exponen automáticamente en el 
 - Capa Firebase (`src/lib/firebase.ts`, `src/lib/auth.ts`, `src/lib/entries.ts`) con helpers para Auth y Firestore.
 - Pantalla principal (`app/home`, `src/screens/HomeScreen.tsx`) para crear textos analizados y ver el historial en tiempo real.
 - Router basado en Expo Router (`app/_layout.tsx`) con rutas por carpeta.
-- UI con NativeWind/Tailwind (`tailwind.config.js`, componentes reutilizables en `src/components`).
+- UI creada con estilos tradicionales de React Native (`StyleSheet`) y componentes reutilizables en `src/components`.
 
 ## Rutas principales (`app/`)
 
-- `registry/`: pantalla de autenticación y registro.
+- `login/`: vista de acceso con la UI inspirada en Wealthfront.
+- `registry/`: formulario de registro con campos personales antes de crear la cuenta.
 - `home/`: tablero principal con creación/listado de análisis.
 - `game/`: modo juego que recorre tus textos guardados.
+- `profile/`: vista de perfil con tarjetas de datos generales y notificaciones.
 
 ## Próximos pasos sugeridos
 

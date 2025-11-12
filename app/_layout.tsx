@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 
+const AUTH_SEGMENTS = new Set(['login', 'registry']);
+
 const LoadingScreen = () => (
-  <View className="flex-1 items-center justify-center bg-brand-50">
+  <View style={styles.loader}>
     <ActivityIndicator color="#4f6dff" />
   </View>
 );
@@ -19,10 +21,10 @@ const RouterGate = () => {
     if (loading) return;
 
     const currentSegment = segments[0];
-    const isAuthRoute = currentSegment === 'registry';
+    const isAuthRoute = typeof currentSegment === 'string' && AUTH_SEGMENTS.has(currentSegment);
 
     if (!user && !isAuthRoute) {
-      router.replace('/registry');
+      router.replace('/login');
     } else if (user && isAuthRoute) {
       router.replace('/home');
     }
@@ -48,3 +50,11 @@ export default function RootLayout() {
   );
 }
 
+const styles = StyleSheet.create({
+  loader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f3f7ff',
+  },
+});

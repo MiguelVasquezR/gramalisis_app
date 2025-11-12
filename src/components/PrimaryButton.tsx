@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 type Props = {
   label: string;
@@ -9,26 +9,57 @@ type Props = {
 };
 
 export const PrimaryButton = ({ label, onPress, loading, variant = 'primary', disabled }: Props) => {
-  const baseStyles =
-    variant === 'primary'
-      ? 'bg-brand-600 active:bg-brand-700'
-      : 'bg-white border border-brand-200 active:bg-brand-50';
-  const textColor = variant === 'primary' ? 'text-white' : 'text-brand-700';
+  const buttonStyles = [
+    styles.button,
+    variant === 'primary' ? styles.buttonPrimary : styles.buttonSecondary,
+    (disabled || loading) && styles.buttonDisabled,
+  ];
+
+  const textStyles = [
+    styles.label,
+    variant === 'primary' ? styles.labelPrimary : styles.labelSecondary,
+  ];
 
   return (
-    <Pressable
-      className={`w-full flex-row items-center justify-center rounded-2xl px-4 py-3 ${baseStyles} ${
-        disabled || loading ? 'opacity-60' : ''
-      }`}
-      onPress={onPress}
-      disabled={disabled || loading}
-    >
+    <Pressable style={buttonStyles} onPress={onPress} disabled={disabled || loading}>
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? '#fff' : '#1d2b74'} />
       ) : (
-        <Text className={`text-base font-semibold ${textColor}`}>{label}</Text>
+        <Text style={textStyles}>{label}</Text>
       )}
     </Pressable>
   );
 };
 
+const styles = StyleSheet.create({
+  button: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  buttonPrimary: {
+    backgroundColor: '#364fe6',
+  },
+  buttonSecondary: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#c7d6ff',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  labelPrimary: {
+    color: '#ffffff',
+  },
+  labelSecondary: {
+    color: '#1d2b74',
+  },
+});

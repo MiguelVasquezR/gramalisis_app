@@ -1,37 +1,26 @@
 import { useState } from 'react';
 import {
+  ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   SafeAreaView,
   ScrollView,
+  StyleSheet,
   Text,
-  TouchableOpacity,
+  TextInput,
   View,
 } from 'react-native';
-import { signInWithEmail, signUpWithEmail } from '../lib/auth';
-import { PrimaryButton } from '../components/PrimaryButton';
-import { TextField } from '../components/TextField';
+import { useRouter } from 'expo-router';
+import { signInWithEmail } from '../lib/auth';
 
-const copy = {
-  login: {
-    title: 'Bienvenido de nuevo',
-    subtitle: 'Inicia sesión para seguir analizando tus textos.',
-    button: 'Entrar',
-    toggle: '¿No tienes cuenta? Regístrate',
-  },
-  register: {
-    title: 'Crea tu cuenta',
-    subtitle: 'Organiza tus análisis gramaticales con un solo toque.',
-    button: 'Crear cuenta',
-    toggle: '¿Ya tienes cuenta? Inicia sesión',
-  },
-};
-
-type Mode = keyof typeof copy;
+const illustrationUri =
+  'https://res.cloudinary.com/dhou5osrf/image/upload/v1762918771/alvaro-montoro-esqZxpTT5AE-unsplash_c1f9ar.png';
 
 export const AuthScreen = () => {
-  const [mode, setMode] = useState<Mode>('login');
-  const [email, setEmail] = useState('');
+  const router = useRouter();
+  const [email, setEmail] = useState('johndoe@gmail.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,11 +29,7 @@ export const AuthScreen = () => {
     setError(null);
     setLoading(true);
     try {
-      if (mode === 'login') {
-        await signInWithEmail(email, password);
-      } else {
-        await signUpWithEmail(email, password);
-      }
+      await signInWithEmail(email, password);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Algo salió mal. Intenta nuevamente.';
       setError(message);
@@ -53,57 +38,94 @@ export const AuthScreen = () => {
     }
   };
 
+  const showBack = router.canGoBack();
+
   return (
-    <SafeAreaView className="flex-1 bg-brand-50">
+    <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
-        className="flex-1"
+        style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={24}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-1 px-6 py-12 gap-10">
-            <View className="gap-3">
-              <Text className="text-sm font-semibold uppercase tracking-widest text-brand-500">
-                Gramálisis
-              </Text>
-              <Text className="text-3xl font-bold text-brand-900">{copy[mode].title}</Text>
-              <Text className="text-base leading-6 text-brand-700">{copy[mode].subtitle}</Text>
+          <View style={styles.topBar}>
+            <Pressable
+              style={[styles.backButton, !showBack && styles.backButtonDisabled]}
+              disabled={!showBack}
+              onPress={() => {
+                if (showBack) {
+                  router.back();
+                }
+              }}
+            >
+              <Text style={showBack ? styles.backLabel : styles.backLabelDisabled}>{'‹'}</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.illustrationWrapper}>
+            <Image source={{ uri: illustrationUri }} style={styles.illustration} resizeMode="cover" />
+          </View>
+
+          <View style={styles.content}>
+            <View style={styles.heading}>
+              <Text style={styles.title}>Bienvenido!</Text>
+              <Text style={styles.subtitle}>Ingresa tus datos en la parte inferior!</Text>
             </View>
 
-            <View>
-              <TextField
-                label="Correo electrónico"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                value={email}
-                onChangeText={setEmail}
-                placeholder="tucorreo@email.com"
-              />
+            <View style={styles.form}>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabel}>Email</Text>
+                <TextInput
+                  style={styles.fieldInput}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="johndoe@gmail.com"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
 
-              <TextField
-                label="Contraseña"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-                placeholder="••••••••"
-                helperText="Mínimo 6 caracteres."
-              />
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabel}>Password</Text>
+                <TextInput
+                  style={styles.fieldInput}
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
 
-              {error ? <Text className="text-sm text-red-500 mb-2">{error}</Text> : null}
+              {error ? <Text style={styles.error}>{error}</Text> : null}
 
-              <PrimaryButton label={copy[mode].button} onPress={handleSubmit} loading={loading} />
+              <Pressable
+                style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+                onPress={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.submitLabel}>Iniciar Sesión</Text>
+                )}
+              </Pressable>
+
+              <View style={styles.linkGroup}>
+                <Pressable onPress={() => {}} style={styles.linkButton}>
+                  <Text style={styles.link}>Olvidate tu contraseña?</Text>
+                </Pressable>
+                <Pressable onPress={() => router.push('/registry')} style={styles.linkButton}>
+                  <Text style={styles.link}>No tienes cuenta? Registrate</Text>
+                </Pressable>
+              </View>
             </View>
-
-            <TouchableOpacity onPress={() => setMode(mode === 'login' ? 'register' : 'login')}>
-              <Text className="text-center text-base font-semibold text-brand-700">
-                {copy[mode].toggle}
-              </Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -112,3 +134,123 @@ export const AuthScreen = () => {
 };
 
 export default AuthScreen;
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  flex: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  backButton: {
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonDisabled: {
+    backgroundColor: 'transparent',
+  },
+  backLabel: {
+    fontSize: 30,
+    color: '#5d3fd3',
+    fontWeight: '500',
+  },
+  backLabelDisabled: {
+    fontSize: 30,
+    color: '#d1d5db',
+    fontWeight: '500',
+  },
+  illustrationWrapper: {
+    paddingHorizontal: 24,
+    marginTop: 8,
+  },
+  illustration: {
+    width: '100%',
+    height: 256,
+    borderRadius: 24,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 64,
+  },
+  heading: {
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  form: {
+    marginTop: 8,
+  },
+  fieldGroup: {
+    marginBottom: 12,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: '#9ca3af',
+    marginBottom: 8,
+  },
+  fieldInput: {
+    borderBottomWidth: 1,
+    borderColor: '#d1d5db',
+    paddingBottom: 12,
+    fontSize: 18,
+    color: '#0f172a',
+  },
+  error: {
+    fontSize: 14,
+    color: '#ef4444',
+  },
+  submitButton: {
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#5a46ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
+  },
+  submitLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  linkGroup: {
+    marginTop: 12,
+  },
+  linkButton: {
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  link: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#5a46ff',
+  },
+});

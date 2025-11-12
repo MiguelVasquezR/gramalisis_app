@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { Entry, subscribeToEntries } from '../lib/entries';
@@ -28,51 +28,41 @@ export const GameScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-brand-50">
-      <View className="flex-1 px-5 py-6 gap-6">
-        <View className="gap-1">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-brand-500">
-            Gramálisis
-          </Text>
-          <Text className="text-3xl font-bold text-brand-900">Modo juego</Text>
-          <Text className="text-base text-brand-700">
-            Repasa tus textos y genera nuevas ideas al azar.
-          </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.label}>Gramálisis</Text>
+          <Text style={styles.title}>Modo juego</Text>
+          <Text style={styles.subtitle}>Repasa tus textos y genera nuevas ideas al azar.</Text>
         </View>
 
-        <View className="rounded-3xl border border-brand-100 bg-white p-5 shadow-sm flex-1">
+        <View style={styles.card}>
           {currentEntry ? (
             <>
-              <Text className="text-sm font-semibold text-brand-500 mb-2">
+              <Text style={styles.cardIndex}>
                 Texto #{index % entries.length + 1} de {entries.length}
               </Text>
-              <Text className="text-lg font-semibold text-brand-900 mb-3">
-                {currentEntry.summary}
-              </Text>
-              <Text className="text-base leading-6 text-brand-800 flex-1">
-                {currentEntry.text}
-              </Text>
+              <Text style={styles.cardSummary}>{currentEntry.summary}</Text>
+              <Text style={styles.cardBody}>{currentEntry.text}</Text>
             </>
           ) : (
-            <View className="flex-1 items-center justify-center">
-              <Text className="text-center text-base text-brand-500">
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>
                 Aún no tienes análisis guardados. Regresa al inicio y crea uno para comenzar el juego.
               </Text>
             </View>
           )}
         </View>
 
-        <View className="gap-3">
-          <PrimaryButton
-            label="Otro texto"
-            onPress={handleNext}
-            disabled={!entries.length}
-          />
-          <PrimaryButton
-            label="Volver al inicio"
-            variant="secondary"
-            onPress={() => router.push('/home')}
-          />
+        <View style={styles.actions}>
+          <PrimaryButton label="Otro texto" onPress={handleNext} disabled={!entries.length} />
+          <View style={styles.actionSpacer}>
+            <PrimaryButton
+              label="Volver al inicio"
+              variant="secondary"
+              onPress={() => router.push('/home')}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -81,3 +71,83 @@ export const GameScreen = () => {
 
 export default GameScreen;
 
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f3f7ff',
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  header: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: '#7a96ff',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#1d2b74',
+    marginTop: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#475569',
+    marginTop: 4,
+  },
+  card: {
+    flex: 1,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: '#e5edff',
+    backgroundColor: '#ffffff',
+    padding: 20,
+    shadowColor: 'rgba(0,0,0,0.05)',
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+    marginBottom: 24,
+  },
+  cardIndex: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#7a96ff',
+    marginBottom: 8,
+  },
+  cardSummary: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1d2b74',
+    marginBottom: 12,
+  },
+  cardBody: {
+    fontSize: 16,
+    lineHeight: 22,
+    color: '#0f172a',
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#94a3b8',
+  },
+  actions: {
+    marginTop: 8,
+  },
+  actionSpacer: {
+    marginTop: 12,
+  },
+});

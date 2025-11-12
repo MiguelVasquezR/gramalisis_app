@@ -1,14 +1,14 @@
 import { Redirect } from 'expo-router';
-import RegisterScreen from '../../src/screens/RegisterScreen';
+import AuthScreen from '../../src/screens/AuthScreen';
 import { useAuth } from '../../src/context/AuthContext';
 
-export default function RegistryRoute() {
+export default function LoginRoute() {
   const { user } = useAuth();
 
   if (user) {
     return <Redirect href="/home" />;
   }
 
-  return <RegisterScreen />;
+  return <AuthScreen />;
 }
 
