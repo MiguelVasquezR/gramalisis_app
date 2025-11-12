@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   FlatList,
+  Image,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -111,9 +112,15 @@ export const HomeScreen = () => {
           </View>
           <Link href="/profile" asChild>
             <TouchableOpacity style={styles.avatarButton}>
-              <Text style={styles.avatarInitial}>
-                {user?.email ? user.email.charAt(0).toUpperCase() : "U"}
-              </Text>
+              {currentUser?.photoUrl ? (
+                <Image source={{ uri: currentUser.photoUrl }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarInitial}>
+                  {currentUser?.firstName?.charAt(0)?.toUpperCase() ??
+                    user?.email?.charAt(0).toUpperCase() ??
+                    "U"}
+                </Text>
+              )}
             </TouchableOpacity>
           </Link>
         </View>
@@ -356,17 +363,23 @@ const styles = StyleSheet.create({
     color: "#cbd5f5",
   },
   avatarButton: {
-    height: 44,
-    width: 44,
-    borderRadius: 22,
+    height: 48,
+    width: 48,
+    borderRadius: 24,
     backgroundColor: "#1d2b74",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
   avatarInitial: {
     fontSize: 18,
     fontWeight: "700",
     color: "#ffffff",
+  },
+  avatarImage: {
+    height: 48,
+    width: 48,
+    borderRadius: 24,
   },
   levelsSection: {
     marginBottom: 24,
