@@ -52,9 +52,14 @@ export const getDataById = async (collectionName: string, id: string) => {
 };
 
 export const getDataByEmail = async (collectionName: string, email: string) => {
+  const normalizedEmail = email?.trim();
+
+  if (!normalizedEmail) {
+    return null;
+  }
   try {
     const docRef = collection(firestore, collectionName);
-    const q = query(docRef, where("username", "==", email));
+    const q = query(docRef, where("username", "==", normalizedEmail));
     const docSnap = await getDocs(q);
 
     if (!docSnap.empty) {

@@ -33,8 +33,15 @@ export const AuthProvider = ({ children }: Props) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
       setUser(nextUser);
-      const dataUser = await getDataByEmail("USERS", nextUser?.email || "");
-      const currentUser = (dataUser as User) || {};
+
+      if (!nextUser?.email) {
+        dispatch({ type: "SET_USER", payload: null });
+        setLoading(false);
+        return;
+      }
+
+      const dataUser = await getDataByEmail("USERS", nextUser.email);
+      const currentUser = (dataUser as User) || null;
       dispatch({ type: "SET_USER", payload: currentUser });
       setLoading(false);
     });
