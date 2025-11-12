@@ -15,6 +15,7 @@ import { signOut } from "../lib/auth";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { useAppSelector } from "../store/AppStore";
 import { buildFullName } from "../utils/utils";
+import { DateTime } from "luxon";
 
 const FALLBACK_AVATAR =
   "https://images.ctfassets.net/3s5io6mnxfqz/2X8tOCmFLK9X4nHIaWkKQ4/7654afad8eb5b3a0b2733bc8f42b77d8/mobbin-profile.png";
@@ -37,7 +38,9 @@ export const ProfileScreen = () => {
     currentUser?.lastName || ""
   );
   const email = currentUser?.username ?? user?.email ?? "example@gmail.com";
-  const joined = "Joined August 17, 2023";
+  const joined = DateTime.fromISO(
+    currentUser?.joined || DateTime.now().toISO()
+  ).toFormat("dd MMM, yyyy");
   const photo = currentUser?.photoUrl ?? user?.photoURL ?? null;
   const job = currentUser?.job ?? "Ocupación";
   const initials = name
@@ -99,7 +102,7 @@ export const ProfileScreen = () => {
 
         <View style={styles.hero}>
           <View style={styles.avatarWrapper}>
-            {(photo ?? FALLBACK_AVATAR) ? (
+            {photo ?? FALLBACK_AVATAR ? (
               <Image
                 source={{ uri: photo ?? FALLBACK_AVATAR }}
                 style={styles.avatar}

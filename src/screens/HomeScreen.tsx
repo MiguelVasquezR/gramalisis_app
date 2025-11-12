@@ -90,7 +90,8 @@ export const HomeScreen = () => {
   );
 
   const nextLevel =
-    LEVELS.find((lvl) => lvl.order === userLevel + 1) ?? LEVELS[LEVELS.length - 1];
+    LEVELS.find((lvl) => lvl.order === userLevel + 1) ??
+    LEVELS[LEVELS.length - 1];
   const remainingForNext = Math.max(0, nextLevel.requirement - totalEntries);
   const avatarLetter =
     currentUser?.firstName?.charAt(0).toUpperCase() ??
@@ -125,11 +126,6 @@ export const HomeScreen = () => {
                   </Text>
                 ))}
               </View>
-              <Text style={styles.levelHelper}>
-                {remainingForNext > 0
-                  ? `Te faltan ${remainingForNext} lecciones para subir al siguiente nivel.`
-                  : "¡Has desbloqueado todo el nivel básico!"}
-              </Text>
             </View>
             <Link href="/profile" asChild>
               <TouchableOpacity style={styles.avatarButton}>
