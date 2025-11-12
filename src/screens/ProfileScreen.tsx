@@ -87,6 +87,7 @@ export const ProfileScreen = () => {
             {menuVisible ? (
               <View style={styles.dropdown}>
                 <TouchableOpacity
+                  activeOpacity={0.85}
                   style={styles.dropdownItem}
                   onPress={() => {
                     setMenuVisible(false);
@@ -190,21 +191,27 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: "#ffffff",
     borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    shadowColor: "rgba(0,0,0,0.15)",
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    shadowColor: "rgba(15, 23, 42, 0.25)",
     shadowOpacity: 1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 6,
+    minWidth: 180,
+    borderWidth: 1,
+    borderColor: "rgba(15, 23, 42, 0.08)",
+    zIndex: 500,
   },
   dropdownItem: {
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 12,
   },
   dropdownText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1d2b74",
+    color: "#0f172a",
   },
   hero: {
     alignItems: "center",
