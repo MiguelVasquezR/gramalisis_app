@@ -1,6 +1,8 @@
 import { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
+  KeyboardTypeOptions,
   Modal,
   Platform,
   Pressable,
@@ -10,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TextInputProps,
   View,
   ViewStyle,
 } from "react-native";
@@ -18,6 +21,8 @@ import DateTimePicker, {
   DateTimePickerAndroid,
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import { register } from "../firebase/authService";
+import { writeData } from "../firebase/dbService";
 
 type InputBlockProps = {
   label: string;
@@ -26,6 +31,10 @@ type InputBlockProps = {
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
   style?: StyleProp<ViewStyle>;
+  keyboardType?: KeyboardTypeOptions;
+  autoCapitalize?: TextInputProps["autoCapitalize"];
+  autoComplete?: TextInputProps["autoComplete"];
+  textContentType?: TextInputProps["textContentType"];
 };
 
 const InputBlock = ({
@@ -35,6 +44,10 @@ const InputBlock = ({
   onChangeText,
   secureTextEntry,
   style,
+  keyboardType,
+  autoCapitalize,
+  autoComplete,
+  textContentType,
 }: InputBlockProps) => (
   <View style={[styles.inputBlock, style]}>
     <Text style={styles.inputLabel}>{label}</Text>
@@ -45,6 +58,10 @@ const InputBlock = ({
       value={value}
       onChangeText={onChangeText}
       secureTextEntry={secureTextEntry}
+      keyboardType={keyboardType}
+      autoCapitalize={autoCapitalize}
+      autoComplete={autoComplete}
+      textContentType={textContentType}
     />
   </View>
 );
@@ -86,6 +103,9 @@ export const RegisterScreen = () => {
   const [password, setPassword] = useState("");
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [iosPickerDate, setIosPickerDate] = useState(new Date(2000, 0, 1));
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleBirthDateChange = (
     event: DateTimePickerEvent,
@@ -131,6 +151,86 @@ export const RegisterScreen = () => {
   const confirmIosPicker = () => {
     setBirthDate(iosPickerDate);
     hideIosPicker();
+  };
+
+  const isValidEmail = (value: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+  const handleCreateAccount = async () => {
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedOccupation = occupation.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
+
+    if (
+      !trimmedFirstName ||
+      !trimmedLastName ||
+      !birthDate ||
+      !trimmedOccupation ||
+      !trimmedEmail ||
+      !trimmedPassword
+    ) {
+      setError("Por favor completa todos los campos.");
+      setStatus(null);
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      setError("Ingresa un correo electrónico válido.");
+      setStatus(null);
+      return;
+    }
+
+    if (trimmedPassword.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres.");
+      setStatus(null);
+      return;
+    }
+
+    setError(null);
+    setStatus(null);
+    setLoading(true);
+
+    try {
+      const registerResponse = await register(trimmedEmail, trimmedPassword);
+
+      if (registerResponse.status !== 200 || !registerResponse.uid) {
+        setError(registerResponse.message ?? "No pudimos crear tu cuenta.");
+        return;
+      }
+
+      const userProfile = {
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+        job: trimmedOccupation,
+        username: trimmedEmail,
+        password: trimmedPassword,
+        uid: registerResponse.uid,
+        dateBirth: birthDate.toISOString(),
+        photoUrl: "",
+        level: 1,
+        joined: new Date().toISOString(),
+      };
+
+      const result = await writeData("USERS", userProfile);
+
+      if (result !== 200) {
+        setError("No pudimos guardar tu información. Intenta nuevamente.");
+        return;
+      }
+
+      setStatus("Cuenta creada correctamente 🎉");
+      router.replace("/home");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Ocurrió un error al crear tu cuenta.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const showBack = router.canGoBack();
@@ -208,6 +308,10 @@ export const RegisterScreen = () => {
                 placeholder="correo@ejemplo.com"
                 value={email}
                 onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                textContentType="emailAddress"
               />
 
               <InputBlock
@@ -216,12 +320,27 @@ export const RegisterScreen = () => {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                textContentType="password"
               />
             </View>
 
             <View style={styles.actions}>
-              <Pressable style={styles.submitButton}>
-                <Text style={styles.submitLabel}>Crear cuenta</Text>
+              {error && <Text style={styles.errorText}>{error}</Text>}
+              {status && <Text style={styles.statusText}>{status}</Text>}
+
+              <Pressable
+                style={[
+                  styles.submitButton,
+                  loading && styles.submitButtonDisabled,
+                ]}
+                onPress={handleCreateAccount}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.submitLabel}>Crear cuenta</Text>
+                )}
               </Pressable>
 
               <Pressable onPress={() => router.replace("/login")}>
@@ -375,6 +494,16 @@ const styles = StyleSheet.create({
   actions: {
     marginTop: 32,
   },
+  errorText: {
+    fontSize: 14,
+    color: "#ef4444",
+    marginBottom: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    color: "#16a34a",
+    marginBottom: 8,
+  },
   submitButton: {
     height: 56,
     borderRadius: 28,
@@ -383,6 +512,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 16,
     marginBottom: 16,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
   },
   submitLabel: {
     fontSize: 16,
