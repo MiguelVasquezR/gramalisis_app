@@ -15,6 +15,7 @@ import {
 import { useRouter } from "expo-router";
 import { login, resetPassword } from "../firebase/authService";
 import { URL_IMAGE_MAIN } from "../const/index";
+import HeaderBar from "../components/HeaderBar";
 
 type AuthMode = "login" | "forgot";
 
@@ -115,7 +116,6 @@ export const AuthScreen = () => {
     await handleLoginSubmit();
   };
 
-  const showBack = router.canGoBack();
   const title = isForgotMode ? "Olvidaste tu contraseña?" : "Bienvenido!";
   const subtitle = isForgotMode
     ? "Ingresa tu correo y te enviaremos las intrucciones."
@@ -134,26 +134,7 @@ export const AuthScreen = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.topBar}>
-            <Pressable
-              style={[
-                styles.backButton,
-                !showBack && styles.backButtonDisabled,
-              ]}
-              disabled={!showBack}
-              onPress={() => {
-                if (showBack) {
-                  router.back();
-                }
-              }}
-            >
-              <Text
-                style={showBack ? styles.backLabel : styles.backLabelDisabled}
-              >
-                {"‹"}
-              </Text>
-            </Pressable>
-          </View>
+          <HeaderBar />
 
           <View style={styles.illustrationWrapper}>
             <Image
@@ -254,30 +235,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-  },
-  topBar: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  backButton: {
-    height: 40,
-    width: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backButtonDisabled: {
-    backgroundColor: "transparent",
-  },
-  backLabel: {
-    fontSize: 30,
-    color: "#5d3fd3",
-    fontWeight: "500",
-  },
-  backLabelDisabled: {
-    fontSize: 30,
-    color: "#d1d5db",
-    fontWeight: "500",
   },
   illustrationWrapper: {
     paddingHorizontal: 24,

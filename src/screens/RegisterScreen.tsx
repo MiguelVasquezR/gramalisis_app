@@ -23,6 +23,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { register } from "../firebase/authService";
 import { writeData } from "../firebase/dbService";
+import HeaderBar from "../components/HeaderBar";
 
 type InputBlockProps = {
   label: string;
@@ -233,8 +234,6 @@ export const RegisterScreen = () => {
     }
   };
 
-  const showBack = router.canGoBack();
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -247,22 +246,7 @@ export const RegisterScreen = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.topBar}>
-            <Pressable
-              style={[
-                styles.backButton,
-                !showBack && styles.backButtonDisabled,
-              ]}
-              disabled={!showBack}
-              onPress={() => showBack && router.back()}
-            >
-              <Text
-                style={showBack ? styles.backLabel : styles.backLabelDisabled}
-              >
-                {"‹"}
-              </Text>
-            </Pressable>
-          </View>
+          <HeaderBar />
 
           <View style={styles.content}>
             <View style={styles.header}>
@@ -405,30 +389,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-  },
-  topBar: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  backButton: {
-    height: 40,
-    width: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backButtonDisabled: {
-    backgroundColor: "transparent",
-  },
-  backLabel: {
-    fontSize: 30,
-    color: "#5d3fd3",
-    fontWeight: "500",
-  },
-  backLabelDisabled: {
-    fontSize: 30,
-    color: "#d1d5db",
-    fontWeight: "500",
   },
   content: {
     flex: 1,

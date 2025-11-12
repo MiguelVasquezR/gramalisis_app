@@ -16,6 +16,7 @@ import { PrimaryButton } from "../components/PrimaryButton";
 import { useAppSelector } from "../store/AppStore";
 import { buildFullName } from "../utils/utils";
 import { DateTime } from "luxon";
+import HeaderBar from "../components/HeaderBar";
 
 const FALLBACK_AVATAR =
   "https://images.ctfassets.net/3s5io6mnxfqz/2X8tOCmFLK9X4nHIaWkKQ4/7654afad8eb5b3a0b2733bc8f42b77d8/mobbin-profile.png";
@@ -70,36 +71,32 @@ export const ProfileScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.menuRow}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.backLabel}>‹</Text>
-          </TouchableOpacity>
-          <View>
-            <TouchableOpacity
-              style={styles.menuButton}
-              onPress={() => setMenuVisible((prev) => !prev)}
-            >
-              <Text style={styles.menuButtonLabel}>⋮</Text>
-            </TouchableOpacity>
-            {menuVisible ? (
-              <View style={styles.dropdown}>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    router.push("/profile/edit");
-                  }}
-                >
-                  <Text style={styles.dropdownText}>Editar usuario</Text>
-                </TouchableOpacity>
-              </View>
-            ) : null}
-          </View>
-        </View>
+        <HeaderBar
+          rightSlot={
+            <View>
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => setMenuVisible((prev) => !prev)}
+              >
+                <Text style={styles.menuButtonLabel}>⋮</Text>
+              </TouchableOpacity>
+              {menuVisible ? (
+                <View style={styles.dropdown}>
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      router.push("/profile/edit");
+                    }}
+                  >
+                    <Text style={styles.dropdownText}>Editar usuario</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
+            </View>
+          }
+        />
 
         <View style={styles.hero}>
           <View style={styles.avatarWrapper}>
@@ -154,24 +151,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 32,
-  },
-  menuRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-  },
-  backButton: {
-    height: 40,
-    width: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backLabel: {
-    fontSize: 28,
-    color: "#0f172a",
   },
   menuButton: {
     height: 40,
