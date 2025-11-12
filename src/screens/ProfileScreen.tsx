@@ -16,6 +16,9 @@ import { PrimaryButton } from "../components/PrimaryButton";
 import { useAppSelector } from "../store/AppStore";
 import { buildFullName } from "../utils/utils";
 
+const FALLBACK_AVATAR =
+  "https://images.ctfassets.net/3s5io6mnxfqz/2X8tOCmFLK9X4nHIaWkKQ4/7654afad8eb5b3a0b2733bc8f42b77d8/mobbin-profile.png";
+
 const CardRow = ({ icon, label }: { icon: string; label: string }) => (
   <View style={styles.cardRow}>
     <Text style={styles.cardRowIcon}>{icon}</Text>
@@ -96,9 +99,9 @@ export const ProfileScreen = () => {
 
         <View style={styles.hero}>
           <View style={styles.avatarWrapper}>
-            {photo ? (
+            {(photo ?? FALLBACK_AVATAR) ? (
               <Image
-                source={{ uri: photo }}
+                source={{ uri: photo ?? FALLBACK_AVATAR }}
                 style={styles.avatar}
                 resizeMode="cover"
               />
