@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { signInWithEmail } from '../lib/auth';
+import { login } from '../firebase/authService';
 
 const illustrationUri =
   'https://images.ctfassets.net/3s5io6mnxfqz/3b1YgnSUZXM0TLWHe9NmQP/d2721f9dc57f6711d2fef1ea46421efb/Wealthfront-App.png';
@@ -23,13 +23,33 @@ export const AuthScreen = () => {
   const [email, setEmail] = useState('johndoe@gmail.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
+      setError('Por favor completa correo y contraseña.');
+      return;
+    }
+
     setError(null);
+    setStatus(null);
     setLoading(true);
     try {
-      await signInWithEmail(email, password);
+      const response = await login(trimmedEmail, trimmedPassword);
+
+      console.log({response})
+
+      if (!response.ok) {
+        setError(response.message);
+        return;
+      }
+
+      setStatus(response.message);
+      router.replace('/home');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Algo salió mal. Intenta nuevamente.';
       setError(message);
@@ -104,6 +124,7 @@ export const AuthScreen = () => {
               </View>
 
               {error ? <Text style={styles.error}>{error}</Text> : null}
+              {status ? <Text style={styles.status}>{status}</Text> : null}
 
               <Pressable
                 style={[styles.submitButton, loading && styles.submitButtonDisabled]}
@@ -222,6 +243,11 @@ const styles = StyleSheet.create({
   error: {
     fontSize: 14,
     color: '#ef4444',
+  },
+  status: {
+    fontSize: 14,
+    color: '#16a34a',
+    marginTop: 8,
   },
   submitButton: {
     height: 56,

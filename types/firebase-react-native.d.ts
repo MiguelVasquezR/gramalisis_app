@@ -1,4 +1,4 @@
-declare module 'firebase/auth/react-native' {
+declare module '@firebase/auth/dist/rn/index.js' {
   export * from 'firebase/auth';
 
   import type { Persistence } from 'firebase/auth';
