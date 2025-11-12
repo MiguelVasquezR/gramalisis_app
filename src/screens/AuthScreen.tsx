@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -11,27 +11,30 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { login } from '../firebase/authService';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { login, resetPassword } from "../firebase/authService";
+import { URL_IMAGE_MAIN } from "../const/index";
 
-const illustrationUri =
-  'https://images.ctfassets.net/3s5io6mnxfqz/3b1YgnSUZXM0TLWHe9NmQP/d2721f9dc57f6711d2fef1ea46421efb/Wealthfront-App.png';
+type AuthMode = "login" | "forgot";
 
 export const AuthScreen = () => {
   const router = useRouter();
-  const [email, setEmail] = useState('johndoe@gmail.com');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<AuthMode>("login");
 
-  const handleSubmit = async () => {
+  const isForgotMode = mode === "forgot";
+
+  const handleLoginSubmit = async () => {
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
     if (!trimmedEmail || !trimmedPassword) {
-      setError('Por favor completa correo y contraseña.');
+      setError("Por favor completa correo y contraseña.");
       return;
     }
 
@@ -47,22 +50,83 @@ export const AuthScreen = () => {
       }
 
       setStatus(response.message);
-      router.replace('/home');
+      router.replace("/home");
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Algo salió mal. Intenta nuevamente.';
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Algo salió mal. Intenta nuevamente.";
       setError(message);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleForgotSubmit = async () => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      setError("Por favor ingresa un correo válido.");
+      return;
+    }
+
+    setError(null);
+    setStatus(null);
+    setLoading(true);
+
+    try {
+      const response = await resetPassword(trimmedEmail);
+
+      if (!response.ok) {
+        setError(response.message);
+        return;
+      }
+
+      setStatus(response.message);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Algo salió mal. Intenta nuevamente.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const switchMode = (nextMode: AuthMode) => {
+    if (mode === nextMode) return;
+
+    setMode(nextMode);
+    setError(null);
+    setStatus(null);
+
+    if (nextMode === "forgot") {
+      setPassword("");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (isForgotMode) {
+      await handleForgotSubmit();
+      return;
+    }
+
+    await handleLoginSubmit();
+  };
+
   const showBack = router.canGoBack();
+  const title = isForgotMode ? "Olvidaste tu contraseña?" : "Bienvenido!";
+  const subtitle = isForgotMode
+    ? "Ingresa tu correo y te enviaremos las intrucciones."
+    : "Ingresa tus datos en la parte inferior!";
+  const submitLabel = isForgotMode ? "Enviar" : "Iniciar Sesión";
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={24}
       >
         <ScrollView
@@ -72,7 +136,10 @@ export const AuthScreen = () => {
         >
           <View style={styles.topBar}>
             <Pressable
-              style={[styles.backButton, !showBack && styles.backButtonDisabled]}
+              style={[
+                styles.backButton,
+                !showBack && styles.backButtonDisabled,
+              ]}
               disabled={!showBack}
               onPress={() => {
                 if (showBack) {
@@ -80,18 +147,26 @@ export const AuthScreen = () => {
                 }
               }}
             >
-              <Text style={showBack ? styles.backLabel : styles.backLabelDisabled}>{'‹'}</Text>
+              <Text
+                style={showBack ? styles.backLabel : styles.backLabelDisabled}
+              >
+                {"‹"}
+              </Text>
             </Pressable>
           </View>
 
           <View style={styles.illustrationWrapper}>
-            <Image source={{ uri: illustrationUri }} style={styles.illustration} resizeMode="cover" />
+            <Image
+              source={{ uri: URL_IMAGE_MAIN }}
+              style={styles.illustration}
+              resizeMode="cover"
+            />
           </View>
 
           <View style={styles.content}>
             <View style={styles.heading}>
-              <Text style={styles.title}>Bienvenido!</Text>
-              <Text style={styles.subtitle}>Ingresa tus datos en la parte inferior!</Text>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.subtitle}>{subtitle}</Text>
             </View>
 
             <View style={styles.form}>
@@ -104,43 +179,58 @@ export const AuthScreen = () => {
                   autoComplete="email"
                   value={email}
                   onChangeText={setEmail}
-                  placeholder="johndoe@gmail.com"
+                  placeholder="youremail@gmail.com"
                   placeholderTextColor="#94a3b8"
                 />
               </View>
 
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Password</Text>
-                <TextInput
-                  style={styles.fieldInput}
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="••••••••"
-                  placeholderTextColor="#94a3b8"
-                />
-              </View>
+              {!isForgotMode && (
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>Password</Text>
+                  <TextInput
+                    style={styles.fieldInput}
+                    secureTextEntry
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="••••••••"
+                    placeholderTextColor="#94a3b8"
+                  />
+                </View>
+              )}
 
               {error ? <Text style={styles.error}>{error}</Text> : null}
               {status ? <Text style={styles.status}>{status}</Text> : null}
 
               <Pressable
-                style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+                style={[
+                  styles.submitButton,
+                  loading && styles.submitButtonDisabled,
+                ]}
                 onPress={handleSubmit}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.submitLabel}>Iniciar Sesión</Text>
+                  <Text style={styles.submitLabel}>{submitLabel}</Text>
                 )}
               </Pressable>
 
               <View style={styles.linkGroup}>
-                <Pressable onPress={() => {}} style={styles.linkButton}>
-                  <Text style={styles.link}>Olvidate tu contraseña?</Text>
+                <Pressable
+                  onPress={() => switchMode(isForgotMode ? "login" : "forgot")}
+                  style={styles.linkButton}
+                >
+                  <Text style={styles.link}>
+                    {isForgotMode
+                      ? "Tienes cuenta? Inicia sesión"
+                      : "¿Olvidaste tu contraseña?"}
+                  </Text>
                 </Pressable>
-                <Pressable onPress={() => router.push('/registry')} style={styles.linkButton}>
+                <Pressable
+                  onPress={() => router.push("/registry")}
+                  style={styles.linkButton}
+                >
                   <Text style={styles.link}>No tienes cuenta? Registrate</Text>
                 </Pressable>
               </View>
@@ -157,7 +247,7 @@ export default AuthScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   flex: {
     flex: 1,
@@ -173,28 +263,28 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   backButtonDisabled: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   backLabel: {
     fontSize: 30,
-    color: '#5d3fd3',
-    fontWeight: '500',
+    color: "#5d3fd3",
+    fontWeight: "500",
   },
   backLabelDisabled: {
     fontSize: 30,
-    color: '#d1d5db',
-    fontWeight: '500',
+    color: "#d1d5db",
+    fontWeight: "500",
   },
   illustrationWrapper: {
     paddingHorizontal: 24,
     marginTop: 8,
   },
   illustration: {
-    width: '100%',
+    width: "100%",
     height: 256,
     borderRadius: 24,
   },
@@ -209,13 +299,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '900',
-    color: '#0f172a',
+    fontWeight: "900",
+    color: "#0f172a",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: "#6b7280",
   },
   form: {
     marginTop: 8,
@@ -225,34 +315,34 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: '#9ca3af',
+    textTransform: "uppercase",
+    color: "#9ca3af",
     marginBottom: 8,
   },
   fieldInput: {
     borderBottomWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: "#d1d5db",
     paddingBottom: 12,
     fontSize: 18,
-    color: '#0f172a',
+    color: "#0f172a",
   },
   error: {
     fontSize: 14,
-    color: '#ef4444',
+    color: "#ef4444",
   },
   status: {
     fontSize: 14,
-    color: '#16a34a',
+    color: "#16a34a",
     marginTop: 8,
   },
   submitButton: {
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#5a46ff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#5a46ff",
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 16,
     marginBottom: 16,
   },
@@ -261,8 +351,8 @@ const styles = StyleSheet.create({
   },
   submitLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
   },
   linkGroup: {
     marginTop: 12,
@@ -272,9 +362,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   link: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
-    fontWeight: '600',
-    color: '#5a46ff',
+    fontWeight: "600",
+    color: "#5a46ff",
   },
 });

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -13,6 +14,10 @@ import {
   ViewStyle,
 } from "react-native";
 import { useRouter } from "expo-router";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 
 type InputBlockProps = {
   label: string;
@@ -44,13 +49,89 @@ const InputBlock = ({
   </View>
 );
 
+type DatePickerBlockProps = {
+  label: string;
+  value: Date | null;
+  onPress: () => void;
+};
+
+const DatePickerBlock = ({ label, value, onPress }: DatePickerBlockProps) => {
+  const displayValue = value
+    ? value.toLocaleDateString("es-MX", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    : "DD/MM/YYYY";
+
+  return (
+    <View style={styles.inputBlock}>
+      <Text style={styles.inputLabel}>{label}</Text>
+      <Pressable style={styles.dateTrigger} onPress={onPress}>
+        <Text style={value ? styles.dateValue : styles.datePlaceholder}>
+          {displayValue}
+        </Text>
+      </Pressable>
+    </View>
+  );
+};
+
 export const RegisterScreen = () => {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [occupation, setOccupation] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [iosPickerDate, setIosPickerDate] = useState(new Date(2000, 0, 1));
+
+  const handleBirthDateChange = (
+    event: DateTimePickerEvent,
+    selectedDate?: Date
+  ) => {
+    if (event.type === "dismissed") {
+      return;
+    }
+
+    if (selectedDate) {
+      setBirthDate(selectedDate);
+    }
+  };
+
+  const showBirthDatePicker = () => {
+    const pickerValue = birthDate ?? new Date(2000, 0, 1);
+
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        value: pickerValue,
+        mode: "date",
+        maximumDate: new Date(),
+        onChange: handleBirthDateChange,
+      });
+      return;
+    }
+
+    setIosPickerDate(pickerValue);
+    setDatePickerVisible(true);
+  };
+
+  const handleIosPickerChange = (
+    _event: DateTimePickerEvent,
+    selectedDate?: Date
+  ) => {
+    if (selectedDate) {
+      setIosPickerDate(selectedDate);
+    }
+  };
+
+  const hideIosPicker = () => setDatePickerVisible(false);
+
+  const confirmIosPicker = () => {
+    setBirthDate(iosPickerDate);
+    hideIosPicker();
+  };
 
   const showBack = router.canGoBack();
 
@@ -109,11 +190,10 @@ export const RegisterScreen = () => {
                 />
               </View>
 
-              <InputBlock
+              <DatePickerBlock
                 label="Fecha de nacimiento"
-                placeholder="DD/MM/YYYY"
                 value={birthDate}
-                onChangeText={setBirthDate}
+                onPress={showBirthDatePicker}
               />
 
               <InputBlock
@@ -121,6 +201,13 @@ export const RegisterScreen = () => {
                 placeholder="e.j. Estudiante"
                 value={occupation}
                 onChangeText={setOccupation}
+              />
+
+              <InputBlock
+                label="Correo electrónico"
+                placeholder="correo@ejemplo.com"
+                value={email}
+                onChangeText={setEmail}
               />
 
               <InputBlock
@@ -144,6 +231,45 @@ export const RegisterScreen = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {Platform.OS === "ios" && (
+        <Modal
+          visible={isDatePickerVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={hideIosPicker}
+        >
+          <View style={styles.dateModalOverlay}>
+            <View style={styles.dateModal}>
+              <View style={styles.dateModalActions}>
+                <Pressable onPress={hideIosPicker}>
+                  <Text style={styles.dateModalActionText}>Cancelar</Text>
+                </Pressable>
+                <Pressable onPress={confirmIosPicker}>
+                  <Text
+                    style={[
+                      styles.dateModalActionText,
+                      styles.dateModalActionPrimary,
+                    ]}
+                  >
+                    Listo
+                  </Text>
+                </Pressable>
+              </View>
+
+              <DateTimePicker
+                value={iosPickerDate}
+                mode="date"
+                display="spinner"
+                maximumDate={new Date()}
+                locale="es-MX"
+                onChange={handleIosPickerChange}
+                style={styles.iosDatePicker}
+              />
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 };
@@ -231,6 +357,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#0f172a",
   },
+  dateTrigger: {
+    borderRadius: 16,
+    backgroundColor: "#f4f4f5",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    justifyContent: "center",
+  },
+  dateValue: {
+    fontSize: 16,
+    color: "#0f172a",
+  },
+  datePlaceholder: {
+    fontSize: 16,
+    color: "#a1a1aa",
+  },
   actions: {
     marginTop: 32,
   },
@@ -253,5 +394,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#5a46ff",
+  },
+  dateModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.45)",
+    justifyContent: "flex-end",
+  },
+  dateModal: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingBottom: 24,
+  },
+  dateModalActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+  },
+  dateModalActionText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#6b7280",
+  },
+  dateModalActionPrimary: {
+    color: "#5a46ff",
+  },
+  iosDatePicker: {
+    backgroundColor: "#ffffff",
   },
 });

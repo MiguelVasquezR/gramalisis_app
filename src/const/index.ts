@@ -3,3 +3,6 @@ export const URL_IMAGE_GRAMMAR =
 
 export const URL_IMAGE_GAME =
   "https://res.cloudinary.com/dhou5osrf/image/upload/v1744866662/gramalsis/system/vi8ilyhxt0eg1dwfj31e.png";
+
+export const URL_IMAGE_MAIN =
+  "https://res.cloudinary.com/dhou5osrf/image/upload/v1762918771/alvaro-montoro-esqZxpTT5AE-unsplash_c1f9ar.png";

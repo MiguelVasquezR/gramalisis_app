@@ -5,6 +5,7 @@ import {
   signOut,
   getIdToken,
   User,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -61,6 +62,28 @@ export const register = async (email: string, password: string) => {
 export async function logout() {
   return signOut(auth);
 }
+
+export const resetPassword = async (email: string) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return {
+      ok: true,
+      message: "Hemos enviado un correo para restablecer tu contraseña ✅",
+    };
+  } catch (error: any) {
+    let message = "No pudimos enviar el correo. Intenta nuevamente.";
+
+    if (error?.code === "auth/user-not-found") {
+      message = "No encontramos una cuenta con ese correo.";
+    }
+
+    return {
+      ok: false,
+      error: error?.code,
+      message,
+    };
+  }
+};
 
 // Opcional: token para tu backend
 export async function getFreshIdToken(forceRefresh = false) {
