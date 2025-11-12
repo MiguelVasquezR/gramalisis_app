@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,8 +11,8 @@ import {
   TextInput,
   View,
   ViewStyle,
-} from 'react-native';
-import { useRouter } from 'expo-router';
+} from "react-native";
+import { useRouter } from "expo-router";
 
 type InputBlockProps = {
   label: string;
@@ -23,7 +23,14 @@ type InputBlockProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const InputBlock = ({ label, placeholder, value, onChangeText, secureTextEntry, style }: InputBlockProps) => (
+const InputBlock = ({
+  label,
+  placeholder,
+  value,
+  onChangeText,
+  secureTextEntry,
+  style,
+}: InputBlockProps) => (
   <View style={[styles.inputBlock, style]}>
     <Text style={styles.inputLabel}>{label}</Text>
     <TextInput
@@ -39,11 +46,11 @@ const InputBlock = ({ label, placeholder, value, onChangeText, secureTextEntry, 
 
 export const RegisterScreen = () => {
   const router = useRouter();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [occupation, setOccupation] = useState('');
-  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [occupation, setOccupation] = useState("");
+  const [password, setPassword] = useState("");
 
   const showBack = router.canGoBack();
 
@@ -51,7 +58,7 @@ export const RegisterScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={24}
       >
         <ScrollView
@@ -61,33 +68,40 @@ export const RegisterScreen = () => {
         >
           <View style={styles.topBar}>
             <Pressable
-              style={[styles.backButton, !showBack && styles.backButtonDisabled]}
+              style={[
+                styles.backButton,
+                !showBack && styles.backButtonDisabled,
+              ]}
               disabled={!showBack}
               onPress={() => showBack && router.back()}
             >
-              <Text style={showBack ? styles.backLabel : styles.backLabelDisabled}>{'‹'}</Text>
+              <Text
+                style={showBack ? styles.backLabel : styles.backLabelDisabled}
+              >
+                {"‹"}
+              </Text>
             </Pressable>
           </View>
 
           <View style={styles.content}>
             <View style={styles.header}>
-              <Text style={styles.title}>Create your account</Text>
+              <Text style={styles.title}>Crea una cuenta!</Text>
               <Text style={styles.subtitle}>
-                Tell us a bit about you para personalizar tu experiencia.
+                Ingresa los siguientes datos, por favor.
               </Text>
             </View>
 
             <View>
               <View style={styles.row}>
                 <InputBlock
-                  label="First Name"
+                  label="Nombre"
                   placeholder="John"
                   value={firstName}
                   onChangeText={setFirstName}
                   style={[styles.inputHalf, styles.inputHalfSpacing]}
                 />
                 <InputBlock
-                  label="Last Name"
+                  label="Apellido(s)"
                   placeholder="Doe"
                   value={lastName}
                   onChangeText={setLastName}
@@ -96,21 +110,21 @@ export const RegisterScreen = () => {
               </View>
 
               <InputBlock
-                label="Date of Birth"
+                label="Fecha de nacimiento"
                 placeholder="DD/MM/YYYY"
                 value={birthDate}
                 onChangeText={setBirthDate}
               />
 
               <InputBlock
-                label="Occupation"
-                placeholder="e.g. Linguist"
+                label="Ocupación"
+                placeholder="e.j. Estudiante"
                 value={occupation}
                 onChangeText={setOccupation}
               />
 
               <InputBlock
-                label="Password"
+                label="Contraseña"
                 placeholder="••••••••"
                 value={password}
                 onChangeText={setPassword}
@@ -120,11 +134,11 @@ export const RegisterScreen = () => {
 
             <View style={styles.actions}>
               <Pressable style={styles.submitButton}>
-                <Text style={styles.submitLabel}>Create account</Text>
+                <Text style={styles.submitLabel}>Crear cuenta</Text>
               </Pressable>
 
-              <Pressable onPress={() => router.replace('/login')}>
-                <Text style={styles.link}>Already have an account? Log in</Text>
+              <Pressable onPress={() => router.replace("/login")}>
+                <Text style={styles.link}>Ya tienes cuenta? Inicia sesión</Text>
               </Pressable>
             </View>
           </View>
@@ -139,7 +153,7 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   flex: {
     flex: 1,
@@ -155,21 +169,21 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   backButtonDisabled: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   backLabel: {
     fontSize: 30,
-    color: '#5d3fd3',
-    fontWeight: '500',
+    color: "#5d3fd3",
+    fontWeight: "500",
   },
   backLabelDisabled: {
     fontSize: 30,
-    color: '#d1d5db',
-    fontWeight: '500',
+    color: "#d1d5db",
+    fontWeight: "500",
   },
   content: {
     flex: 1,
@@ -181,17 +195,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '900',
-    color: '#0f172a',
+    fontWeight: "900",
+    color: "#0f172a",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: "#6b7280",
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   inputBlock: {
     marginBottom: 16,
@@ -205,38 +219,39 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#0f172a',
+    fontWeight: "600",
+    color: "#0f172a",
     marginBottom: 8,
   },
   input: {
     borderRadius: 16,
-    backgroundColor: '#f4f4f5',
+    backgroundColor: "#f4f4f5",
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#0f172a',
+    color: "#0f172a",
   },
   actions: {
-    marginTop: 24,
+    marginTop: 32,
   },
   submitButton: {
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#5a46ff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#5a46ff",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
     marginBottom: 16,
   },
   submitLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
   },
   link: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
-    fontWeight: '600',
-    color: '#5a46ff',
+    fontWeight: "600",
+    color: "#5a46ff",
   },
 });

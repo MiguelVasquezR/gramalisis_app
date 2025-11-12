@@ -3,5 +3,5 @@
   "compilerOptions": {
     "strict": true
   },
-  "include": ["app", "src", "global.d.ts"]
+  "include": ["app", "src"]
 }

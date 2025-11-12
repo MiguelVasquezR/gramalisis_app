@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { signInWithEmail } from '../lib/auth';
 
 const illustrationUri =
-  'https://res.cloudinary.com/dhou5osrf/image/upload/v1762918771/alvaro-montoro-esqZxpTT5AE-unsplash_c1f9ar.png';
+  'https://images.ctfassets.net/3s5io6mnxfqz/3b1YgnSUZXM0TLWHe9NmQP/d2721f9dc57f6711d2fef1ea46421efb/Wealthfront-App.png';
 
 export const AuthScreen = () => {
   const router = useRouter();
