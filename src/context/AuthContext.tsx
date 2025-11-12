@@ -1,9 +1,18 @@
-import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { User as UserFB, onAuthStateChanged } from "firebase/auth";
+import { auth } from "../lib/firebase";
+import { useAppDispatch } from "../store/AppStore";
+import { getDataByEmail } from "../firebase/dbService";
 
 type AuthContextValue = {
-  user: User | null;
+  user: UserFB | null;
   loading: boolean;
 };
 
@@ -17,17 +26,21 @@ type Props = {
 };
 
 export const AuthProvider = ({ children }: Props) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserFB | null>(null);
   const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
       setUser(nextUser);
+      const dataUser = await getDataByEmail("USERS", nextUser?.email || "");
+      const currentUser = (dataUser as User) || {};
+      dispatch({ type: "SET_USER", payload: currentUser });
       setLoading(false);
     });
 
     return unsubscribe;
-  }, []);
+  }, [dispatch]);
 
   const value = useMemo(
     () => ({
@@ -41,4 +54,3 @@ export const AuthProvider = ({ children }: Props) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-

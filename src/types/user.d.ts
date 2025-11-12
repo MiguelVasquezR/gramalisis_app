@@ -8,4 +8,5 @@ type User = {
   photoUrl: string;
   uid: string;
   username: string;
+  level: number = 1;
 };

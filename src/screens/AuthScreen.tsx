@@ -41,8 +41,6 @@ export const AuthScreen = () => {
     try {
       const response = await login(trimmedEmail, trimmedPassword);
 
-      console.log({response})
-
       if (!response.ok) {
         setError(response.message);
         return;

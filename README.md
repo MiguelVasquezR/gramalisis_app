@@ -35,7 +35,7 @@ Las variables que empiezan con `EXPO_PUBLIC_` se exponen automáticamente en el 
 - Pantalla de autenticación con alternancia registro/login y validaciones básicas.
 - Contexto global (`src/context/AuthContext.tsx`) que escucha el estado de Firebase Auth.
 - Capa Firebase (`src/lib/firebase.ts`, `src/lib/auth.ts`, `src/lib/entries.ts`) con helpers para Auth y Firestore.
-- Pantalla principal (`app/home`, `src/screens/HomeScreen.tsx`) para crear textos analizados y ver el historial en tiempo real.
+- Dashboard con niveles progresivos y estadísticas (estado global en `src/store/AppStore.tsx` + `src/const/levels.ts`).
 - Router basado en Expo Router (`app/_layout.tsx`) con rutas por carpeta.
 - UI creada con estilos tradicionales de React Native (`StyleSheet`) y componentes reutilizables en `src/components`.
 

@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { AppStoreProvider } from '../src/store/AppStore';
 
 const AUTH_SEGMENTS = new Set(['login', 'registry']);
 
@@ -44,9 +45,11 @@ const RouterGate = () => {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RouterGate />
-    </AuthProvider>
+    <AppStoreProvider>
+      <AuthProvider>
+        <RouterGate />
+      </AuthProvider>
+    </AppStoreProvider>
   );
 }
 

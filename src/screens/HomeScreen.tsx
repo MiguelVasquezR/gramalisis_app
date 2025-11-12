@@ -13,6 +13,8 @@ import { signOut as signOutFromApp } from "../lib/auth";
 import { Entry, createEntry, subscribeToEntries } from "../lib/entries";
 import { useAuth } from "../context/AuthContext";
 import { PrimaryButton } from "../components/PrimaryButton";
+import { LEVELS } from "../const/levels";
+import { useAppDispatch, useAppSelector } from "../store/AppStore";
 
 const formatDate = (date?: Date) => {
   if (!date) return "Sin fecha";
@@ -22,56 +24,22 @@ const formatDate = (date?: Date) => {
   }).format(date);
 };
 
-const levels = [
-  {
-    id: 1,
-    title: "Explorador",
-    description: "Registra tu primer análisis y descubre los insights básicos.",
-    requirement: 1,
-  },
-  {
-    id: 2,
-    title: "Analista",
-    description:
-      "Mantén una racha de 5 análisis para desbloquear métricas avanzadas.",
-    requirement: 5,
-  },
-  {
-    id: 3,
-    title: "Estratega",
-    description: "Comparte 10 textos distintos para activar recomendaciones.",
-    requirement: 10,
-  },
-  {
-    id: 4,
-    title: "Mentor",
-    description: "Colabora con tu equipo compartiendo 15 análisis.",
-    requirement: 15,
-  },
-  {
-    id: 5,
-    title: "Leyenda",
-    description: "Completa 25 análisis para desbloquear todos los reportes.",
-    requirement: 25,
-  },
-];
-
 export const HomeScreen = () => {
   const { user } = useAuth();
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const dispatch = useAppDispatch();
+  const userState: User | null = useAppSelector((state) => state.currentUser);
+  const entries = useAppSelector((state) => state.entries);
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) {
-      setEntries([]);
-      return;
-    }
+  const [currentUser, setCurrentUser] = useState<User>();
 
-    const unsubscribe = subscribeToEntries(user.uid, setEntries);
-    return unsubscribe;
-  }, [user]);
+  useEffect(() => {
+    if (userState) {
+      setCurrentUser(userState);
+    }
+  }, [userState]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -79,6 +47,15 @@ export const HomeScreen = () => {
     setError(null);
     try {
       await createEntry(user.uid, text);
+      dispatch({
+        type: "ADD_ENTRY",
+        payload: {
+          id: `temp-${Date.now()}`,
+          text,
+          summary: `${text.split(/\s+/).filter(Boolean).length} palabras`,
+          createdAt: new Date(),
+        } as Entry,
+      });
       setText("");
     } catch (err) {
       const message =
@@ -95,15 +72,18 @@ export const HomeScreen = () => {
 
   const totalEntries = entries.length;
   const userLevel = Math.max(
-    1,
+    currentUser?.level || 1,
     Math.min(
-      levels[levels.length - 1].id,
-      levels.reduce(
+      LEVELS[LEVELS.length - 1].id,
+      LEVELS.reduce(
         (acc, level) => (totalEntries >= level.requirement ? level.id : acc),
         1
       )
     )
   );
+  const nextLevel =
+    LEVELS.find((lvl) => lvl.id === userLevel + 1) ?? LEVELS[LEVELS.length - 1];
+  const remainingForNext = Math.max(0, nextLevel.requirement - totalEntries);
 
   const listContentStyle = totalEntries === 0 ? styles.emptyContent : undefined;
 
@@ -112,7 +92,9 @@ export const HomeScreen = () => {
       <View style={styles.container}>
         <View style={styles.topMenu}>
           <View style={styles.levelContainer}>
-            <Text style={styles.levelLabel}>Nivel actual</Text>
+            <Text style={styles.levelLabel}>
+              {currentUser?.firstName} {currentUser?.lastName}
+            </Text>
             <View style={styles.starsRow}>
               {Array.from({ length: 5 }).map((_, idx) => (
                 <Text
@@ -139,19 +121,74 @@ export const HomeScreen = () => {
         <View style={styles.levelsSection}>
           <Text style={styles.sectionTitle}>Niveles disponibles</Text>
           <Text style={styles.sectionSubtitle}>
-            Completa{" "}
-            {Math.max(
-              0,
-              (levels.find((lvl) => lvl.id === userLevel + 1)?.requirement ??
-                levels[levels.length - 1].requirement) - totalEntries
-            )}{" "}
-            análisis más para subir al siguiente nivel.
+            {remainingForNext > 0
+              ? `Completa ${remainingForNext} análisis más para subir al siguiente nivel.`
+              : "Has desbloqueado todos los niveles disponibles 🎉"}
           </Text>
 
           <View style={styles.levelsGrid}>
-            {levels.map((level) => {
+            {LEVELS.map((level) => {
               const unlocked = totalEntries >= level.requirement;
               const isCurrent = userLevel === level.id;
+              return (
+                <View
+                  key={level.id}
+                  style={[
+                    styles.levelCard,
+                    unlocked && styles.levelCardUnlocked,
+                    isCurrent && styles.levelCardCurrent,
+                  ]}
+                >
+                  <View style={styles.levelHeader}>
+                    <Text style={styles.levelBadge}>Nivel {level.id}</Text>
+                    <Text
+                      style={[
+                        styles.levelStatus,
+                        unlocked
+                          ? styles.levelStatusUnlocked
+                          : styles.levelStatusLocked,
+                      ]}
+                    >
+                      {unlocked
+                        ? isCurrent
+                          ? "Actual"
+                          : "Desbloqueado"
+                        : "Bloqueado"}
+                    </Text>
+                  </View>
+                  <Text style={styles.levelTitle}>{level.title}</Text>
+                  <Text style={styles.levelDescription}>
+                    {level.description}
+                  </Text>
+                  <Text style={styles.levelRequirement}>
+                    {Math.min(totalEntries, level.requirement)}/
+                    {level.requirement} análisis
+                  </Text>
+                  <PrimaryButton
+                    label={unlocked ? "Explorar reto" : "Completa más"}
+                    onPress={() => {}}
+                    disabled={!unlocked}
+                    variant={unlocked ? "primary" : "secondary"}
+                  />
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.levelsSection}>
+          <Text style={styles.sectionTitle}>Niveles disponibles</Text>
+          <Text style={styles.sectionSubtitle}>
+            {remainingForNext > 0
+              ? `Completa ${remainingForNext} análisis más para subir al siguiente nivel.`
+              : "Has desbloqueado todos los niveles disponibles 🎉"}
+          </Text>
+
+          <View style={styles.levelsGrid}>
+            {LEVELS.map((level) => {
+              const unlocked = totalEntries >= level.requirement;
+              const isCurrent = userLevel === level.id;
+
               return (
                 <View
                   key={level.id}
@@ -331,46 +368,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#ffffff",
   },
-  actionButton: {
-    borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginLeft: 10,
-  },
-  actionButtonFirst: {
-    marginLeft: 0,
-  },
-  outlineButton: {
-    borderWidth: 1,
-    borderColor: "#e5edff",
-    backgroundColor: "#ffffff",
-  },
-  solidButton: {
-    backgroundColor: "#364fe6",
-  },
-  actionText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  outlineText: {
-    color: "#2a3dba",
-  },
-  solidText: {
-    color: "#ffffff",
-  },
-  editorCard: {
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#e5edff",
-    backgroundColor: "#f3f7ff",
-    padding: 16,
-    shadowColor: "rgba(0,0,0,0.05)",
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-    marginBottom: 24,
-  },
   levelsSection: {
     marginBottom: 24,
   },
@@ -440,6 +437,46 @@ const styles = StyleSheet.create({
   levelRequirement: {
     fontSize: 13,
     color: "#94a3b8",
+  },
+  actionButton: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginLeft: 10,
+  },
+  actionButtonFirst: {
+    marginLeft: 0,
+  },
+  outlineButton: {
+    borderWidth: 1,
+    borderColor: "#e5edff",
+    backgroundColor: "#ffffff",
+  },
+  solidButton: {
+    backgroundColor: "#364fe6",
+  },
+  actionText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  outlineText: {
+    color: "#2a3dba",
+  },
+  solidText: {
+    color: "#ffffff",
+  },
+  editorCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#e5edff",
+    backgroundColor: "#f3f7ff",
+    padding: 16,
+    shadowColor: "rgba(0,0,0,0.05)",
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+    marginBottom: 24,
   },
   cardTitle: {
     fontSize: 18,
