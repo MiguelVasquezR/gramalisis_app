@@ -6,9 +6,8 @@ export default function GameRoute() {
   const { user } = useAuth();
 
   if (!user) {
-    return <Redirect href="/registry" />;
+    return <Redirect href="/login" />;
   }
 
   return <GameScreen />;
 }
-

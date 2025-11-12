@@ -24,6 +24,7 @@ import DateTimePicker, {
 import { register } from "../firebase/authService";
 import { writeData } from "../firebase/dbService";
 import HeaderBar from "../components/HeaderBar";
+import COLORS from "../theme/colors";
 
 type InputBlockProps = {
   label: string;
@@ -55,7 +56,7 @@ const InputBlock = ({
     <TextInput
       style={styles.input}
       placeholder={placeholder}
-      placeholderTextColor="#a1a1aa"
+      placeholderTextColor={COLORS.GRAY_TEXT}
       value={value}
       onChangeText={onChangeText}
       secureTextEntry={secureTextEntry}
@@ -382,13 +383,14 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.WHITE,
   },
   flex: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
+    backgroundColor: COLORS.WHITE,
   },
   content: {
     flex: 1,
@@ -401,12 +403,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "900",
-    color: "#0f172a",
+    color: COLORS.BLUE,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#6b7280",
+    color: COLORS.GRAY_TEXT,
   },
   row: {
     flexDirection: "row",
@@ -425,53 +427,62 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#0f172a",
+    color: COLORS.BLUE,
     marginBottom: 8,
   },
   input: {
     borderRadius: 16,
-    backgroundColor: "#f4f4f5",
+    backgroundColor: COLORS.BLUE_100,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#0f172a",
+    color: COLORS.BLACK,
+    borderWidth: 1,
+    borderColor: COLORS.BLUE_200,
   },
   dateTrigger: {
     borderRadius: 16,
-    backgroundColor: "#f4f4f5",
+    backgroundColor: COLORS.BLUE_100,
     paddingHorizontal: 16,
     paddingVertical: 12,
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.BLUE_200,
   },
   dateValue: {
     fontSize: 16,
-    color: "#0f172a",
+    color: COLORS.BLACK,
   },
   datePlaceholder: {
     fontSize: 16,
-    color: "#a1a1aa",
+    color: COLORS.GRAY_TEXT,
   },
   actions: {
     marginTop: 32,
   },
   errorText: {
     fontSize: 14,
-    color: "#ef4444",
+    color: COLORS.BLUE,
     marginBottom: 8,
   },
   statusText: {
     fontSize: 14,
-    color: "#16a34a",
+    color: COLORS.GREEN,
     marginBottom: 8,
   },
   submitButton: {
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#5a46ff",
+    backgroundColor: COLORS.BLUE,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 16,
     marginBottom: 16,
+    shadowColor: COLORS.BLUE,
+    shadowOpacity: 0.3,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
   },
   submitButtonDisabled: {
     opacity: 0.7,
@@ -479,13 +490,13 @@ const styles = StyleSheet.create({
   submitLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#ffffff",
+    color: COLORS.WHITE,
   },
   link: {
     textAlign: "center",
     fontSize: 16,
     fontWeight: "600",
-    color: "#5a46ff",
+    color: COLORS.BLUE,
   },
   dateModalOverlay: {
     flex: 1,
@@ -509,10 +520,10 @@ const styles = StyleSheet.create({
   dateModalActionText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#6b7280",
+    color: COLORS.GRAY_TEXT,
   },
   dateModalActionPrimary: {
-    color: "#5a46ff",
+    color: COLORS.BLUE,
   },
   iosDatePicker: {
     backgroundColor: "#ffffff",

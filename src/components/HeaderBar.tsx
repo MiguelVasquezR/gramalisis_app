@@ -8,6 +8,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { useRouter } from "expo-router";
+import COLORS from "../theme/colors";
 
 type HeaderBarProps = {
   showBack?: boolean;
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "transparent",
+    backgroundColor: COLORS.BLUE_100,
   },
   backButtonDisabled: {
     opacity: 0.5,
@@ -85,8 +86,9 @@ const styles = StyleSheet.create({
     height: 40,
   },
   backLabel: {
-    fontSize: 28,
-    color: "#0f172a",
+    fontSize: 24,
+    color: COLORS.BLUE,
+    fontWeight: "700",
   },
   rightContent: {
     flex: 1,

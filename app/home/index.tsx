@@ -6,9 +6,8 @@ export default function HomeRoute() {
   const { user } = useAuth();
 
   if (!user) {
-    return <Redirect href="/registry" />;
+    return <Redirect href="/login" />;
   }
 
   return <HomeScreen />;
 }
-

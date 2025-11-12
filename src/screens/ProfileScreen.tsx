@@ -17,6 +17,7 @@ import { useAppSelector } from "../store/AppStore";
 import { buildFullName } from "../utils/utils";
 import { DateTime } from "luxon";
 import HeaderBar from "../components/HeaderBar";
+import COLORS from "../theme/colors";
 
 const FALLBACK_AVATAR =
   "https://images.ctfassets.net/3s5io6mnxfqz/2X8tOCmFLK9X4nHIaWkKQ4/7654afad8eb5b3a0b2733bc8f42b77d8/mobbin-profile.png";
@@ -60,6 +61,7 @@ export const ProfileScreen = () => {
         style: "destructive",
         onPress: async () => {
           await signOut();
+          router.dismissAll();
           router.replace("/login");
         },
       },
@@ -156,19 +158,21 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
     borderRadius: 20,
-    backgroundColor: "#f4f4f5",
+    backgroundColor: COLORS.BLUE_100,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.BLUE_200,
   },
   menuButtonLabel: {
     fontSize: 24,
-    color: "#0f172a",
+    color: COLORS.BLUE,
   },
   dropdown: {
     position: "absolute",
     top: 48,
     right: 0,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.WHITE,
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 12,
@@ -179,7 +183,7 @@ const styles = StyleSheet.create({
     elevation: 6,
     minWidth: 180,
     borderWidth: 1,
-    borderColor: "rgba(15, 23, 42, 0.08)",
+    borderColor: COLORS.BLUE_200,
     zIndex: 500,
   },
   dropdownItem: {
@@ -190,7 +194,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#0f172a",
+    color: COLORS.BLUE,
   },
   hero: {
     alignItems: "center",
@@ -201,7 +205,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: "#f4f0ff",
+    backgroundColor: COLORS.BLUE_100,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -220,18 +224,18 @@ const styles = StyleSheet.create({
   avatarInitial: {
     fontSize: 48,
     fontWeight: "700",
-    color: "#7a5af8",
+    color: COLORS.BLUE,
   },
   name: {
     marginTop: 24,
     fontSize: 30,
     fontWeight: "700",
-    color: "#0f172a",
+    color: COLORS.BLUE,
   },
   joined: {
     marginTop: 4,
     fontSize: 16,
-    color: "#6b7280",
+    color: COLORS.GRAY_TEXT,
   },
   cards: {
     paddingHorizontal: 24,
@@ -240,25 +244,25 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 28,
     borderWidth: 1,
-    borderColor: "#e4e4e7",
-    backgroundColor: "#ffffff",
+    borderColor: COLORS.BLUE_100,
+    backgroundColor: COLORS.WHITE,
     padding: 20,
     marginBottom: 20,
-    shadowColor: "rgba(0,0,0,0.03)",
-    shadowOpacity: 1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+    shadowColor: COLORS.BLUE,
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 3,
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#0f172a",
+    color: COLORS.BLUE,
     marginBottom: 12,
   },
   divider: {
     height: 1,
-    backgroundColor: "#e4e4e7",
+    backgroundColor: COLORS.BLUE_100,
   },
   cardRow: {
     flexDirection: "row",
@@ -271,7 +275,7 @@ const styles = StyleSheet.create({
   },
   cardRowText: {
     fontSize: 16,
-    color: "#0f172a",
+    color: COLORS.BLACK,
   },
   footer: {
     paddingHorizontal: 24,

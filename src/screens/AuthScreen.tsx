@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import { login, resetPassword } from "../firebase/authService";
 import { URL_IMAGE_MAIN } from "../const/index";
 import HeaderBar from "../components/HeaderBar";
+import COLORS from "../theme/colors";
 
 type AuthMode = "login" | "forgot";
 
@@ -134,7 +135,7 @@ export const AuthScreen = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <HeaderBar />
+          <HeaderBar showBack={false} />
 
           <View style={styles.illustrationWrapper}>
             <Image
@@ -161,7 +162,7 @@ export const AuthScreen = () => {
                   value={email}
                   onChangeText={setEmail}
                   placeholder="youremail@gmail.com"
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor={COLORS.GRAY_TEXT}
                 />
               </View>
 
@@ -174,7 +175,7 @@ export const AuthScreen = () => {
                     value={password}
                     onChangeText={setPassword}
                     placeholder="••••••••"
-                    placeholderTextColor="#94a3b8"
+                    placeholderTextColor={COLORS.GRAY_TEXT}
                   />
                 </View>
               )}
@@ -191,7 +192,7 @@ export const AuthScreen = () => {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={COLORS.WHITE} />
                 ) : (
                   <Text style={styles.submitLabel}>{submitLabel}</Text>
                 )}
@@ -209,7 +210,7 @@ export const AuthScreen = () => {
                   </Text>
                 </Pressable>
                 <Pressable
-                  onPress={() => router.push("/registry")}
+                  onPress={() => router.replace("/registry")}
                   style={styles.linkButton}
                 >
                   <Text style={styles.link}>No tienes cuenta? Registrate</Text>
@@ -228,17 +229,21 @@ export default AuthScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.WHITE,
   },
   flex: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
+    backgroundColor: COLORS.WHITE,
   },
   illustrationWrapper: {
     paddingHorizontal: 24,
     marginTop: 8,
+    backgroundColor: COLORS.BLUE_100,
+    borderRadius: 24,
+    marginHorizontal: 16,
   },
   illustration: {
     width: "100%",
@@ -257,12 +262,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "900",
-    color: "#0f172a",
+    color: COLORS.BLUE,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#6b7280",
+    color: COLORS.GRAY_TEXT,
   },
   form: {
     marginTop: 8,
@@ -275,33 +280,38 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     letterSpacing: 1,
     textTransform: "uppercase",
-    color: "#9ca3af",
+    color: COLORS.BLUE,
     marginBottom: 8,
   },
   fieldInput: {
     borderBottomWidth: 1,
-    borderColor: "#d1d5db",
+    borderColor: COLORS.BLUE_200,
     paddingBottom: 12,
     fontSize: 18,
-    color: "#0f172a",
+    color: COLORS.BLACK,
   },
   error: {
     fontSize: 14,
-    color: "#ef4444",
+    color: COLORS.BLUE,
   },
   status: {
     fontSize: 14,
-    color: "#16a34a",
+    color: COLORS.GREEN,
     marginTop: 8,
   },
   submitButton: {
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#5a46ff",
+    backgroundColor: COLORS.BLUE,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 16,
     marginBottom: 16,
+    shadowColor: COLORS.BLUE,
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
   },
   submitButtonDisabled: {
     opacity: 0.7,
@@ -309,7 +319,7 @@ const styles = StyleSheet.create({
   submitLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#ffffff",
+    color: COLORS.WHITE,
   },
   linkGroup: {
     marginTop: 12,
@@ -322,6 +332,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 16,
     fontWeight: "600",
-    color: "#5a46ff",
+    color: COLORS.BLUE,
   },
 });
